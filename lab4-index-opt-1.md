@@ -136,10 +136,10 @@ Włącz dwie opcje: **Include Actual Execution Plan** oraz **Include Live Query 
 
 
 
-<!-- ![[_img/index1-1.png | 500]] -->
+<!-- ![[data/index1-1.png | 500]] -->
 
 
-<img src="_img/index1-1.png" alt="image" width="500" height="auto">
+<img src="data/index1-1.png" alt="image" width="500" height="auto">
 
 
 Teraz wykonaj poszczególne zapytania (najlepiej każde analizuj oddzielnie). Co można o nich powiedzieć? Co sprawdzają? Jak można je zoptymalizować?  
@@ -164,9 +164,9 @@ Teraz wykonaj poszczególne zapytania (najlepiej każde analizuj oddzielnie). Co
 
 Zaznacz wszystkie zapytania, i uruchom je w **Database Engine Tuning Advisor**:
 
-<!-- ![[_img/index1-12.png | 500]] -->
+<!-- ![[data/index1-12.png | 500]] -->
 
-<img src="_img/index1-2.png" alt="image" width="500" height="auto">
+<img src="data/index1-2.png" alt="image" width="500" height="auto">
 
 
 Sprawdź zakładkę **Tuning Options**, co tam można skonfigurować?
@@ -183,9 +183,9 @@ Sprawdź zakładkę **Tuning Options**, co tam można skonfigurować?
 
 Użyj **Start Analysis**:
 
-<!-- ![[_img/index1-3.png | 500]] -->
+<!-- ![[data/index1-3.png | 500]] -->
 
-<img src="_img/index1-3.png" alt="image" width="500" height="auto">
+<img src="data/index1-3.png" alt="image" width="500" height="auto">
 
 
 Zaobserwuj wyniki w **Recommendations**.
@@ -193,9 +193,9 @@ Zaobserwuj wyniki w **Recommendations**.
 Przejdź do zakładki **Reports**. Sprawdź poszczególne raporty. Główną uwagę zwróć na koszty i ich poprawę:
 
 
-<!-- ![[_img/index4-1.png | 500]] -->
+<!-- ![[data/index4-1.png | 500]] -->
 
-<img src="_img/index1-4.png" alt="image" width="500" height="auto">
+<img src="data/index1-4.png" alt="image" width="500" height="auto">
 
 
 Zapisz poszczególne rekomendacje:
