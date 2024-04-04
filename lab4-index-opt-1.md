@@ -201,61 +201,31 @@ Sprawdź zakładkę **Tuning Options**, co tam można skonfigurować?
 
 ---
 > Wyniki: 
+>
+>*Indexes and Indexed Views*
+>- Clustered Indexes: Opcja ta zaleca stosowanie indeksów klastrów w celu poprawy wydajności zapytań. Indeksy klastrów sortują fizycznie dane w tabeli na podstawie klucza indeksu, co może przyspieszyć wyszukiwanie.
+>- Nonclustered Indexes: Zaleca używanie indeksów nieklastrów do szybkiego wyszukiwania danych na podstawie innych kolumn niż kolumny indeksu.
+>- Filtered Indexes: Pozwala na tworzenie indeksów filtrowanych, które obejmują tylko określone wiersze z tabeli, co może zmniejszyć rozmiar indeksu i przyspieszyć zapytania.
+>
+>*Recommend Columnstore Indexes*
+>
+>Zaleca stosowanie indeksów kolumnowych (columnstore indexes), które są specjalnym rodzajem indeksu zaprojektowanym do szybkiego przetwarzania dużych ilości danych analitycznych.
+>
+>*Evaluate Utilization of Existing PDS Only*
+>Narzędzie DTA będzie oceniać wykorzystanie istniejących struktur fizycznych bazy danych, takich jak indeksy, a nie będzie proponować tworzenia nowych.
+>
+>*Partitioning Strategy to Employ*
+>- No Partitioning: Nie stosuje partycjonowania.
+>- Full Partitioning: Proponuje pełne partycjonowanie, które dzieli dane na logiczne partycje na podstawie określonej kolumny lub wyrażenia.
+>- Aligned Partitioning: Stosuje partycjonowanie zgodne, w którym granice partycji są wyrównane z granicami partycji na dysku, co może przyspieszyć zarządzanie partycjami.
+>
+>*Physical Design Structures (PDS) to Keep in Database*
+>- Do Not Keep Any Existing PDS: Nie zachowuje żadnych istniejących struktur fizycznych.
+>- Keep All Existing PDS: Zachowuje wszystkie istniejące struktury fizyczne, takie jak indeksy i widoki indeksowane.
+>- Keep Clustered Indexes Only: Zachowuje tylko indeksy klastrów.
+Keep Aligned Partitioning: Zachowuje tylko partycjonowanie zgodne.
 
-```sql
-CREATE NONCLUSTERED INDEX [_dta_index_salesorderdetail_11_597577167__K1_2_3_4_5_6_7_8_9_10_11] ON [dbo].[salesorderdetail]
-(
-	[SalesOrderID] ASC
-)
-INCLUDE([SalesOrderDetailID],[CarrierTrackingNumber],[OrderQty],[ProductID],[SpecialOfferID],[UnitPrice],[UnitPriceDiscount],[LineTotal],[rowguid],[ModifiedDate]) 
-WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
-go
 
-CREATE NONCLUSTERED INDEX [_dta_index_salesorderdetail_11_597577167__K1_K5_4_8_9] ON [dbo].[salesorderdetail]
-(
-	[SalesOrderID] ASC,
-	[ProductID] ASC
-)
-INCLUDE([OrderQty],[UnitPriceDiscount],[LineTotal]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
-go
-
-SET ANSI_PADDING ON
-go
-
-CREATE NONCLUSTERED INDEX [_dta_index_salesorderdetail_11_597577167__K3_K1] ON [dbo].[salesorderdetail]
-(
-	[CarrierTrackingNumber] ASC,
-	[SalesOrderID] ASC
-)WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
-go
-
-CREATE STATISTICS [_dta_stat_597577167_1_3] ON [dbo].[salesorderdetail]([SalesOrderID], [CarrierTrackingNumber])
-go
-
-CREATE NONCLUSTERED INDEX [_dta_index_salesorderheader_11_581577110__K3_K1_2_4_5_6_7_8_9_10_11_12_13_14_15_16_17_18_19_20_21_22_23_24_25_26] ON [dbo].[salesorderheader]
-(
-	[OrderDate] ASC,
-	[SalesOrderID] ASC
-)
-INCLUDE([RevisionNumber],[DueDate],[ShipDate],[Status],[OnlineOrderFlag],[SalesOrderNumber],[PurchaseOrderNumber],[AccountNumber],[CustomerID],[SalesPersonID],
-	[TerritoryID],[BillToAddressID],[ShipToAddressID],[ShipMethodID],[CreditCardID],[CreditCardApprovalCode],[CurrencyRateID],[SubTotal],[TaxAmt],[Freight],
-	[TotalDue],[Comment],[rowguid],[ModifiedDate]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
-go
-
-CREATE NONCLUSTERED INDEX [_dta_index_salesorderheader_11_581577110__K1_4_5_8_9] ON [dbo].[salesorderheader]
-(
-	[SalesOrderID] ASC
-)
-INCLUDE([DueDate],[ShipDate],[SalesOrderNumber],[PurchaseOrderNumber]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
-go
-
-CREATE NONCLUSTERED INDEX [_dta_index_salesorderheader_11_581577110__K1_K3] ON [dbo].[salesorderheader]
-(
-	[SalesOrderID] ASC,
-	[OrderDate] ASC
-)WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
-go
-```
 
 ---
 
