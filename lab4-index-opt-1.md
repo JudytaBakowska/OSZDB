@@ -325,12 +325,30 @@ go
 Sprawdź jak zmieniły się Execution Plany. Opisz zmiany:
 
 ---
-> Wyniki: 
+> Wyniki:
+>
+>**Zapytanie 1:**
+>
+>Po zastosowaniu indeksu na kolumnie OrderDate w tabeli salesorderheader oraz indeksu na kolumnie SalesOrderID w tabeli salesorderdetail, optymalizator zapytań może wykorzystać te indeksy do szybkiego odnalezienia odpowiednich wierszy. Plan wykonania może więc zawierać operację indeksowego skanu (index scan) lub indeksowego poszukiwania (index seek), co przyspieszy filtrację wyników.
+Zapytanie 2 (grupowanie po dacie zamówienia i identyfikatorze produktu):
+><img src="data/zad2_zap1_1.png" alt="image" width="500" height="auto">
 
-```sql
---  ...
-```
+>**Zapytanie 2:**
+>
+>Dodanie indeksu złożonego na kolumnach OrderDate i ProductID w tabeli salesorderheader pozwoli na efektywne grupowanie danych. Optymalizator zapytań może wykorzystać ten indeks, co może spowodować zmianę planu wykonania na bardziej wydajny, wykorzystujący indeksowe operacje grupowania (index grouping operations).
+><img src="data/zad2_zap2.png" alt="image" width="500" height="auto">
 
+>
+>**Zapytanie 3:**
+>
+>Zastosowanie indeksu na kolumnie OrderDate w tabeli salesorderheader pozwoli na szybkie odnalezienie odpowiednich zamówień na podstawie daty zamówienia. Plan wykonania może zawierać indeksowe poszukiwanie (index seek) lub indeksowy skan (index scan), co przyspieszy filtrowanie wyników.
+> <img src="data/zad2_zap3.png" alt="image" width="500" height="auto">
+
+
+> **Zapytanie 4:**
+>
+>Dodanie indeksu na kolumnie CarrierTrackingNumber w tabeli salesorderdetail umożliwi szybkie odnalezienie odpowiednich zamówień na podstawie numeru śledzenia przewoźnika. Optymalizator zapytań może wykorzystać ten indeks do przyspieszenia operacji filtrowania. Plan wykonania może więc zawierać indeksowe poszukiwanie (index seek) lub indeksowy skan (index scan), zamiast pełnego skanu tabeli, co znacząco poprawi wydajność zapytania.
+><img src="data/zad2_zap4.png" alt="image" width="500" height="auto">
 ---
 
 
