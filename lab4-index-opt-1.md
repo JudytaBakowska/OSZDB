@@ -276,14 +276,23 @@ from sys.dm_db_index_physical_stats (db_id('adventureworks2017')
 ,'detailed') -- we want all information
 ```
 
+
+
 Jakie są według Ciebie najważniejsze pola?
+
+![alt text](zad3_1.png)
+![alt text](zad3_2.png)
+![alt text](zad3_3.png)
 
 ---
 > Wyniki: 
 
-```sql
---  ...
-```
+- `avg_fragmentation_in_percent`: Procent fragmentacji w indeksie. Wysokie wartości mogą sugerować potrzebę defragmentacji.
+- `page_count`: Wskaźnik wielkości indeksu, ważny dla oceny jego wydajności.
+- `avg_page_space_used_in_percent`: Pokazuje, jak efektywnie wykorzystywane jest miejsce na stronie indeksu.
+- `forwarded_record_count`: Ilość przekierowanych rekordów, istotna dla oceny wydajności indeksów nieklastrowych.
+- `index_type_desc` i `alloc_unit_type_desc`: Typ indeksu i typ jednostki alokacji, które pomagają zrozumieć strukturę i zastosowanie indeksu.
+- `index_depth`: Głębokość drzewa indeksu, wpływająca na ilość operacji wejścia/wyjścia potrzebnych do odnalezienia danych.
 
 ---
 
@@ -315,9 +324,13 @@ and index_id not in (0) --only clustered and nonclustered indexes
 > Wyniki: 
 > zrzut ekranu/komentarz:
 
-```sql
---  ...
-```
+![alt text](zad3_reorganisation.png)
+ W bazie 'AdventureWorks2017' znaleziono 5 tabel mających po jednym indeksie wymagającym reorganizacji:
+- `JobCandidate` - indeks o ID 1
+- `ProductModel` - indeks o ID 1
+- `BillOfMaterials` - indeks o ID 2
+- `WorkOrder` - indeks o ID 3
+- `WorkOrderRouting` - indeks o ID 2
 
 ---
 
@@ -345,9 +358,14 @@ and index_id not in (0) --only clustered and nonclustered indexes
 > Wyniki: 
 > zrzut ekranu/komentarz:
 
-```sql
---  ...
-```
+![alt text](zad3_rebuild.png)
+
+W bazie danych `AdventureWorks2017`, indeksy z tabeli `Person` wymagające przebudowy to:
+
+- Indeks o ID 256002
+- Indeks o ID 256003
+- Indeks o ID 256004
+
 
 ---
 
@@ -358,9 +376,9 @@ Czym się różni przebudowa indeksu od reorganizacji?
 ---
 > Wyniki: 
 
-```sql
---  ...
-```
+- **Przebudowa (`REBUILD`)**: Zalecana dla indeksów mocno pofragmentowanych. Jest to intensywniejszy proces, który odbudowuje indeks od podstaw. Może bć bardziej wydajny niż sama reorganizacja indesku.
+- **Reorganizacja indeksu (`REORGANIZE`)**: jest procesem optymalizacji wykorzystywanym, gdy fragmentacja indeksu jest umiarkowana. Jest to operacja mniej zasobożerna, która może być przeprowadzona on-line i nie zakłóca normalnej pracy bazy danych.
+
 
 ---
 
@@ -369,10 +387,7 @@ Sprawdź co przechowuje tabela sys.dm_db_index_usage_stats:
 ---
 > Wyniki: 
 
-```sql
---  ...
-```
-
+![alt text](zad3_tabel.png)
 ---
 
 
@@ -416,7 +431,9 @@ Napisz przygotowane komendy SQL do naprawy indeksów:
 > Wyniki: 
 
 ```sql
---  ...
+ALTER INDEX XMLPATH_Person_Demographics ON Person.Person rebuild;
+ALTER INDEX XMLPROPERTY_Person_Demographics ON Person.Person rebuild;
+ALTER INDEX XMLVALUE_Person_Demographics ON Person.Person rebuild;
 ```
 
 ---
@@ -444,10 +461,28 @@ Zapisz sobie kilka różnych typów stron, dla różnych indeksów:
 ---
 > Wyniki: 
 
-```sql
---  ...
+<pre class="hljs"><code><div style="font-size: 0.4em;">
+ PageFID	PagePID	IAMFID	IAMPID	ObjectID	IndexID	PartitionNumber	PartitionID	iam_chain_type	PageType	IndexLevel	NextPageFID	NextPagePID	PrevPageFID	PrevPagePID
+1	10474	NULL	NULL	1029578706	1	1	72057594047889408	In-row data	10	NULL	0	0	0	0
+1	11712	1	10474	1029578706	1	1	72057594047889408	In-row data	1	0	1	11713	1	12010
+1	11713	1	10474	1029578706	1	1	72057594047889408	In-row data	1	0	1	11714	1	11712
+1	11714	1	10474	1029578706	1	1	72057594047889408	In-row data	1	0	1	11715	1	11713
+ </div></code></pre>
+
+ ```sql
+dbcc ind ('adventureworks2017', 'production.document', 1)  
 ```
 
+<pre class="hljs"><code><div style="font-size: 0.4em;">
+ PageFID	PagePID	IAMFID	IAMPID	ObjectID	IndexID	PartitionNumber	PartitionID	iam_chain_type	PageType	IndexLevel	NextPageFID	NextPagePID	PrevPageFID	PrevPagePID
+1	1133	NULL	NULL	1733581214	1	1	72057594049003520	In-row data	10	NULL	0	0	0	0
+1	800	1	1133	1733581214	1	1	72057594049003520	In-row data	1	0	0	0	0	0
+1	2104	NULL	NULL	1733581214	1	1	72057594049003520	LOB data	10	NULL	0	0	0	0
+1	2096	1	2104	1733581214	1	1	72057594049003520	LOB data	3	0	0	0	0	0
+1	2112	1	2104	1733581214	1	1	72057594049003520	LOB data	3	0	0	0	0	0
+1	2113	1	2104	1733581214	1	1	72057594049003520	LOB data	3	0	0	0	0	0
+1	2136	1	2104	1733581214	1	1	72057594049003520	LOB data	4	0	0	0	0	0
+</div></code></pre>
 ---
 
 Włącz flagę 3604 zanim zaczniesz przeglądać strony:
@@ -468,9 +503,47 @@ Zapisz obserwacje ze stron. Co ciekawego udało się zaobserwować?
 ---
 > Wyniki: 
 
+typ strony = 1
+
+Długość wierszy:
+1. 1378 bity
+2. 1388
+3. 1374
+4. 1390
+5. 1368
+Liczba wolnych bajtów: 1188
+
+Nie da się wstawić następnego wiersza na tej stronie samej długości
+
+
 ```sql
---  ...
+dbcc traceon (3604);
+dbcc page('adventureworks2017', 1, 2136	, 3);
 ```
+
+typ strony = 4
+
+W tym przypadku mamy typ danych LOB
+
+
+Informacja, którą dysponujemy:
+
+  - Blob Id: Identyfikator Bloba.
+  - Level: Poziom Bloba.
+  - MaxLinks: Maksymalna liczba linków do Bloba.
+  - CurLinks: Aktualna liczba linków do Bloba.
+  - Dzieci: Lista dzieci Bloba, informacje o ich lokalizacji, rozmiarze i przesunięciu.
+
+
+```sql
+dbcc traceon (3604);
+dbcc page('adventureworks2017', 1, 2113, 3);
+```
+
+typ strony = 3
+
+W tym przypadku oprócz Blow ID otrzymujemy dane Bloba jako szestanstkową reprezentację binarnych danych
+
 
 ---
 
