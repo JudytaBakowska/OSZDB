@@ -171,15 +171,14 @@ Wyniki sortowane są według identyfikatora zamówienia (salesorderid) rosnąco.
 <img src="data/zad1_zap4.png" alt="image" width="500" height="auto">
 
 >**Optymalizacja**
+>
 >Szybkość wykonania mogłaby zostać poprawiona dzięki:
 >- Indeksowaniu kolumn wykorzystywanych w warunkach łączenia JOIN oraz warunkach filtra WHERE, HAVING może poprawić szybkość wykonania.
 >- Unikanie funkcji w warunkach filtra. Mogą one powodować, że baza danych nie korzysta z indeksów. Na przykład, w zapytaniu 3, data zamówienia jest używana w warunku, ale użyto funkcji IN. Lepszym rozwiązaniem byłoby użycie zakresu dat.
 >- Używanie EXISTS zamiast IN. 
 >- Zgrupowane indeksy na kolumnach uzywanych w warunkach filtra. Na przykład `orderdate` i `productid` w zapytaniu 2.
 
-```sql
---  ...
-```
+
 
 ---
 
@@ -202,10 +201,31 @@ Sprawdź zakładkę **Tuning Options**, co tam można skonfigurować?
 
 ---
 > Wyniki: 
+>
+>*Indexes and Indexed Views*
+>- Clustered Indexes: Opcja ta zaleca stosowanie indeksów klastrów w celu poprawy wydajności zapytań. Indeksy klastrów sortują fizycznie dane w tabeli na podstawie klucza indeksu, co może przyspieszyć wyszukiwanie.
+>- Nonclustered Indexes: Zaleca używanie indeksów nieklastrów do szybkiego wyszukiwania danych na podstawie innych kolumn niż kolumny indeksu.
+>- Filtered Indexes: Pozwala na tworzenie indeksów filtrowanych, które obejmują tylko określone wiersze z tabeli, co może zmniejszyć rozmiar indeksu i przyspieszyć zapytania.
+>
+>*Recommend Columnstore Indexes*
+>
+>Zaleca stosowanie indeksów kolumnowych (columnstore indexes), które są specjalnym rodzajem indeksu zaprojektowanym do szybkiego przetwarzania dużych ilości danych analitycznych.
+>
+>*Evaluate Utilization of Existing PDS Only*
+>Narzędzie DTA będzie oceniać wykorzystanie istniejących struktur fizycznych bazy danych, takich jak indeksy, a nie będzie proponować tworzenia nowych.
+>
+>*Partitioning Strategy to Employ*
+>- No Partitioning: Nie stosuje partycjonowania.
+>- Full Partitioning: Proponuje pełne partycjonowanie, które dzieli dane na logiczne partycje na podstawie określonej kolumny lub wyrażenia.
+>- Aligned Partitioning: Stosuje partycjonowanie zgodne, w którym granice partycji są wyrównane z granicami partycji na dysku, co może przyspieszyć zarządzanie partycjami.
+>
+>*Physical Design Structures (PDS) to Keep in Database*
+>- Do Not Keep Any Existing PDS: Nie zachowuje żadnych istniejących struktur fizycznych.
+>- Keep All Existing PDS: Zachowuje wszystkie istniejące struktury fizyczne, takie jak indeksy i widoki indeksowane.
+>- Keep Clustered Indexes Only: Zachowuje tylko indeksy klastrów.
+Keep Aligned Partitioning: Zachowuje tylko partycjonowanie zgodne.
 
-```sql
 
-```
 
 ---
 
