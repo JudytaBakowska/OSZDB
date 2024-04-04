@@ -171,15 +171,14 @@ Wyniki sortowane są według identyfikatora zamówienia (salesorderid) rosnąco.
 <img src="data/zad1_zap4.png" alt="image" width="500" height="auto">
 
 >**Optymalizacja**
+>
 >Szybkość wykonania mogłaby zostać poprawiona dzięki:
 >- Indeksowaniu kolumn wykorzystywanych w warunkach łączenia JOIN oraz warunkach filtra WHERE, HAVING może poprawić szybkość wykonania.
 >- Unikanie funkcji w warunkach filtra. Mogą one powodować, że baza danych nie korzysta z indeksów. Na przykład, w zapytaniu 3, data zamówienia jest używana w warunku, ale użyto funkcji IN. Lepszym rozwiązaniem byłoby użycie zakresu dat.
 >- Używanie EXISTS zamiast IN. 
 >- Zgrupowane indeksy na kolumnach uzywanych w warunkach filtra. Na przykład `orderdate` i `productid` w zapytaniu 2.
 
-```sql
---  ...
-```
+
 
 ---
 
@@ -204,7 +203,58 @@ Sprawdź zakładkę **Tuning Options**, co tam można skonfigurować?
 > Wyniki: 
 
 ```sql
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderdetail_11_597577167__K1_2_3_4_5_6_7_8_9_10_11] ON [dbo].[salesorderdetail]
+(
+	[SalesOrderID] ASC
+)
+INCLUDE([SalesOrderDetailID],[CarrierTrackingNumber],[OrderQty],[ProductID],[SpecialOfferID],[UnitPrice],[UnitPriceDiscount],[LineTotal],[rowguid],[ModifiedDate]) 
+WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
 
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderdetail_11_597577167__K1_K5_4_8_9] ON [dbo].[salesorderdetail]
+(
+	[SalesOrderID] ASC,
+	[ProductID] ASC
+)
+INCLUDE([OrderQty],[UnitPriceDiscount],[LineTotal]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
+
+SET ANSI_PADDING ON
+go
+
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderdetail_11_597577167__K3_K1] ON [dbo].[salesorderdetail]
+(
+	[CarrierTrackingNumber] ASC,
+	[SalesOrderID] ASC
+)WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
+
+CREATE STATISTICS [_dta_stat_597577167_1_3] ON [dbo].[salesorderdetail]([SalesOrderID], [CarrierTrackingNumber])
+go
+
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderheader_11_581577110__K3_K1_2_4_5_6_7_8_9_10_11_12_13_14_15_16_17_18_19_20_21_22_23_24_25_26] ON [dbo].[salesorderheader]
+(
+	[OrderDate] ASC,
+	[SalesOrderID] ASC
+)
+INCLUDE([RevisionNumber],[DueDate],[ShipDate],[Status],[OnlineOrderFlag],[SalesOrderNumber],[PurchaseOrderNumber],[AccountNumber],[CustomerID],[SalesPersonID],
+	[TerritoryID],[BillToAddressID],[ShipToAddressID],[ShipMethodID],[CreditCardID],[CreditCardApprovalCode],[CurrencyRateID],[SubTotal],[TaxAmt],[Freight],
+	[TotalDue],[Comment],[rowguid],[ModifiedDate]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
+
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderheader_11_581577110__K1_4_5_8_9] ON [dbo].[salesorderheader]
+(
+	[SalesOrderID] ASC
+)
+INCLUDE([DueDate],[ShipDate],[SalesOrderNumber],[PurchaseOrderNumber]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
+
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderheader_11_581577110__K1_K3] ON [dbo].[salesorderheader]
+(
+	[SalesOrderID] ASC,
+	[OrderDate] ASC
+)WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
 ```
 
 ---
