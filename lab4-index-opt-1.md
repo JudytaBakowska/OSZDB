@@ -15,9 +15,9 @@
 
 
 ---
-
 **Imię i nazwisko:**
 
+Judyta Bąkowska, Karolina Źróbek
 --- 
 
 Celem ćwiczenia jest zapoznanie się z planami wykonania zapytań (execution plans), oraz z budową i możliwością wykorzystaniem indeksów.
@@ -147,10 +147,36 @@ Teraz wykonaj poszczególne zapytania (najlepiej każde analizuj oddzielnie). Co
 
 ---
 > Wyniki: 
+
+>**Zapytanie 1:**
+Wybiera wszystkie kolumny z tabeli salesorderheader oraz salesorderdetail, gdzie data zamówienia (orderdate) wynosi '2008-06-01 00:00:00.000'.
 <img src="data/zad1_zap1.png" alt="image" width="500" height="auto">
+
+
+>**Zapytanie 2:**
+Wybiera datę zamówienia (orderdate), identyfikator produktu (productid), sumę zamówionych ilości (orderqty), sumę rabatu jednostkowego (unitpricediscount) oraz sumę całkowitą linii (linetotal) z tabel salesorderheader i salesorderdetail.
+Wyniki grupowane są według daty zamówienia i identyfikatora produktu.
+Tylko te wyniki, gdzie suma zamówionych ilości jest większa lub równa 100, są uwzględniane.
 <img src="data/zad1_zap2.png" alt="image" width="500" height="auto">
+
+>**Zapytanie 3:**
+Wybiera numery zamówienia (salesordernumber), numery zamówienia zakupu (purchaseordernumber), datę płatności (duedate) oraz datę wysyłki (shipdate) z tabel salesorderheader i salesorderdetail.
+Wyniki ograniczane są do tych, gdzie data zamówienia jest jedną z dat: '2008-06-01', '2008-06-02', '2008-06-03', '2008-06-04', '2008-06-05'.
 <img src="data/zad1_zap3.png" alt="image" width="500" height="auto">
+
+>**Zapytanie 4:**
+Wybiera identyfikator zamówienia (salesorderid), numer zamówienia (salesordernumber), numer zamówienia zakupu (purchaseordernumber), datę płatności (duedate) oraz datę wysyłki (shipdate) z tabel salesorderheader i salesorderdetail.
+Wyniki ograniczane są do tych, gdzie numer śledzenia przewoźnika (carriertrackingnumber) jest jednym z podanych: 'ef67-4713-bd', '6c08-4c4c-b8'.
+Wyniki sortowane są według identyfikatora zamówienia (salesorderid) rosnąco.
 <img src="data/zad1_zap4.png" alt="image" width="500" height="auto">
+
+>**Optymalizacja**
+>Szybkość wykonania mogłaby zostać poprawiona dzięki:
+>- Indeksowaniu kolumn wykorzystywanych w warunkach łączenia JOIN oraz warunkach filtra WHERE, HAVING może poprawić szybkość wykonania.
+>- Unikanie funkcji w warunkach filtra. Mogą one powodować, że baza danych nie korzysta z indeksów. Na przykład, w zapytaniu 3, data zamówienia jest używana w warunku, ale użyto funkcji IN. Lepszym rozwiązaniem byłoby użycie zakresu dat.
+>- Używanie EXISTS zamiast IN. 
+>- Zgrupowane indeksy na kolumnach uzywanych w warunkach filtra. Na przykład `orderdate` i `productid` w zapytaniu 2.
+
 ```sql
 --  ...
 ```
@@ -178,7 +204,7 @@ Sprawdź zakładkę **Tuning Options**, co tam można skonfigurować?
 > Wyniki: 
 
 ```sql
---  ...
+
 ```
 
 ---
@@ -209,9 +235,68 @@ Opisz, dlaczego dane indeksy zostały zaproponowane do zapytań:
 
 ---
 > Wyniki: 
+>
+>Indeks na kolumnie `OrderDate` w tabeli `salesorderheader` powinien przyspieszyć filtrowanie po dacie zamówienia. Indeks na kolumnie `SalesOrderID` w tabeli `salesorderdetail `wspomoże operację łączenia (JOIN).
+>
+>Indeks złożony na kolumnach `OrderDate` i `ProductID` w tabeli `salesorderheader` pozwoli na szybsze grupowanie. Ponownie indeks na kolumnie `SalesOrderID` w tabeli `salesorderdetail` wspomoże łączenie.
+>
+>Indeks na kolumnie `OrderDate` w tabeli `salesorderheader` pozwoli na szybsze filtrowanie po dacie zamówienia. Indeks na kolumnie `SalesOrderID` w tabeli salesorderdetail wspomoże operację łączenia.
+>
+>Indeks na kolumnie `CarrierTrackingNumber` w tabeli `salesorderdetail` przyspieszy filtrowanie po numerze śledzenia przewoźnika. Indeks na kolumnie SalesOrderID w tabeli salesorderheader wspomoże łączenie.
 
 ```sql
---  ...
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderdetail_11_597577167__K1_2_3_4_5_6_7_8_9_10_11] ON [dbo].[salesorderdetail]
+(
+	[SalesOrderID] ASC
+)
+INCLUDE([SalesOrderDetailID],[CarrierTrackingNumber],[OrderQty],[ProductID],[SpecialOfferID],[UnitPrice],[UnitPriceDiscount],[LineTotal],[rowguid],[ModifiedDate]) 
+WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
+
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderdetail_11_597577167__K1_K5_4_8_9] ON [dbo].[salesorderdetail]
+(
+	[SalesOrderID] ASC,
+	[ProductID] ASC
+)
+INCLUDE([OrderQty],[UnitPriceDiscount],[LineTotal]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
+
+SET ANSI_PADDING ON
+go
+
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderdetail_11_597577167__K3_K1] ON [dbo].[salesorderdetail]
+(
+	[CarrierTrackingNumber] ASC,
+	[SalesOrderID] ASC
+)WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
+
+CREATE STATISTICS [_dta_stat_597577167_1_3] ON [dbo].[salesorderdetail]([SalesOrderID], [CarrierTrackingNumber])
+go
+
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderheader_11_581577110__K3_K1_2_4_5_6_7_8_9_10_11_12_13_14_15_16_17_18_19_20_21_22_23_24_25_26] ON [dbo].[salesorderheader]
+(
+	[OrderDate] ASC,
+	[SalesOrderID] ASC
+)
+INCLUDE([RevisionNumber],[DueDate],[ShipDate],[Status],[OnlineOrderFlag],[SalesOrderNumber],[PurchaseOrderNumber],[AccountNumber],[CustomerID],[SalesPersonID],
+	[TerritoryID],[BillToAddressID],[ShipToAddressID],[ShipMethodID],[CreditCardID],[CreditCardApprovalCode],[CurrencyRateID],[SubTotal],[TaxAmt],[Freight],
+	[TotalDue],[Comment],[rowguid],[ModifiedDate]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
+
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderheader_11_581577110__K1_4_5_8_9] ON [dbo].[salesorderheader]
+(
+	[SalesOrderID] ASC
+)
+INCLUDE([DueDate],[ShipDate],[SalesOrderNumber],[PurchaseOrderNumber]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
+
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderheader_11_581577110__K1_K3] ON [dbo].[salesorderheader]
+(
+	[SalesOrderID] ASC,
+	[OrderDate] ASC
+)WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
 ```
 
 ---
@@ -254,14 +339,23 @@ from sys.dm_db_index_physical_stats (db_id('adventureworks2017')
 ,'detailed') -- we want all information
 ```
 
+
+
 Jakie są według Ciebie najważniejsze pola?
+
+![alt text](zad3_1.png)
+![alt text](zad3_2.png)
+![alt text](zad3_3.png)
 
 ---
 > Wyniki: 
 
-```sql
---  ...
-```
+- `avg_fragmentation_in_percent`: Procent fragmentacji w indeksie. Wysokie wartości mogą sugerować potrzebę defragmentacji.
+- `page_count`: Wskaźnik wielkości indeksu, ważny dla oceny jego wydajności.
+- `avg_page_space_used_in_percent`: Pokazuje, jak efektywnie wykorzystywane jest miejsce na stronie indeksu.
+- `forwarded_record_count`: Ilość przekierowanych rekordów, istotna dla oceny wydajności indeksów nieklastrowych.
+- `index_type_desc` i `alloc_unit_type_desc`: Typ indeksu i typ jednostki alokacji, które pomagają zrozumieć strukturę i zastosowanie indeksu.
+- `index_depth`: Głębokość drzewa indeksu, wpływająca na ilość operacji wejścia/wyjścia potrzebnych do odnalezienia danych.
 
 ---
 
@@ -293,9 +387,13 @@ and index_id not in (0) --only clustered and nonclustered indexes
 > Wyniki: 
 > zrzut ekranu/komentarz:
 
-```sql
---  ...
-```
+![alt text](zad3_reorganisation.png)
+ W bazie 'AdventureWorks2017' znaleziono 5 tabel mających po jednym indeksie wymagającym reorganizacji:
+- `JobCandidate` - indeks o ID 1
+- `ProductModel` - indeks o ID 1
+- `BillOfMaterials` - indeks o ID 2
+- `WorkOrder` - indeks o ID 3
+- `WorkOrderRouting` - indeks o ID 2
 
 ---
 
@@ -323,9 +421,14 @@ and index_id not in (0) --only clustered and nonclustered indexes
 > Wyniki: 
 > zrzut ekranu/komentarz:
 
-```sql
---  ...
-```
+![alt text](zad3_rebuild.png)
+
+W bazie danych `AdventureWorks2017`, indeksy z tabeli `Person` wymagające przebudowy to:
+
+- Indeks o ID 256002
+- Indeks o ID 256003
+- Indeks o ID 256004
+
 
 ---
 
@@ -336,9 +439,9 @@ Czym się różni przebudowa indeksu od reorganizacji?
 ---
 > Wyniki: 
 
-```sql
---  ...
-```
+- **Przebudowa (`REBUILD`)**: Zalecana dla indeksów mocno pofragmentowanych. Jest to intensywniejszy proces, który odbudowuje indeks od podstaw. Może bć bardziej wydajny niż sama reorganizacja indesku.
+- **Reorganizacja indeksu (`REORGANIZE`)**: jest procesem optymalizacji wykorzystywanym, gdy fragmentacja indeksu jest umiarkowana. Jest to operacja mniej zasobożerna, która może być przeprowadzona on-line i nie zakłóca normalnej pracy bazy danych.
+
 
 ---
 
@@ -347,10 +450,7 @@ Sprawdź co przechowuje tabela sys.dm_db_index_usage_stats:
 ---
 > Wyniki: 
 
-```sql
---  ...
-```
-
+![alt text](zad3_tabel.png)
 ---
 
 
@@ -394,7 +494,9 @@ Napisz przygotowane komendy SQL do naprawy indeksów:
 > Wyniki: 
 
 ```sql
---  ...
+ALTER INDEX XMLPATH_Person_Demographics ON Person.Person rebuild;
+ALTER INDEX XMLPROPERTY_Person_Demographics ON Person.Person rebuild;
+ALTER INDEX XMLVALUE_Person_Demographics ON Person.Person rebuild;
 ```
 
 ---
@@ -422,10 +524,28 @@ Zapisz sobie kilka różnych typów stron, dla różnych indeksów:
 ---
 > Wyniki: 
 
-```sql
---  ...
+<pre class="hljs"><code><div style="font-size: 0.4em;">
+ PageFID	PagePID	IAMFID	IAMPID	ObjectID	IndexID	PartitionNumber	PartitionID	iam_chain_type	PageType	IndexLevel	NextPageFID	NextPagePID	PrevPageFID	PrevPagePID
+1	10474	NULL	NULL	1029578706	1	1	72057594047889408	In-row data	10	NULL	0	0	0	0
+1	11712	1	10474	1029578706	1	1	72057594047889408	In-row data	1	0	1	11713	1	12010
+1	11713	1	10474	1029578706	1	1	72057594047889408	In-row data	1	0	1	11714	1	11712
+1	11714	1	10474	1029578706	1	1	72057594047889408	In-row data	1	0	1	11715	1	11713
+ </div></code></pre>
+
+ ```sql
+dbcc ind ('adventureworks2017', 'production.document', 1)  
 ```
 
+<pre class="hljs"><code><div style="font-size: 0.4em;">
+ PageFID	PagePID	IAMFID	IAMPID	ObjectID	IndexID	PartitionNumber	PartitionID	iam_chain_type	PageType	IndexLevel	NextPageFID	NextPagePID	PrevPageFID	PrevPagePID
+1	1133	NULL	NULL	1733581214	1	1	72057594049003520	In-row data	10	NULL	0	0	0	0
+1	800	1	1133	1733581214	1	1	72057594049003520	In-row data	1	0	0	0	0	0
+1	2104	NULL	NULL	1733581214	1	1	72057594049003520	LOB data	10	NULL	0	0	0	0
+1	2096	1	2104	1733581214	1	1	72057594049003520	LOB data	3	0	0	0	0	0
+1	2112	1	2104	1733581214	1	1	72057594049003520	LOB data	3	0	0	0	0	0
+1	2113	1	2104	1733581214	1	1	72057594049003520	LOB data	3	0	0	0	0	0
+1	2136	1	2104	1733581214	1	1	72057594049003520	LOB data	4	0	0	0	0	0
+</div></code></pre>
 ---
 
 Włącz flagę 3604 zanim zaczniesz przeglądać strony:
@@ -446,9 +566,47 @@ Zapisz obserwacje ze stron. Co ciekawego udało się zaobserwować?
 ---
 > Wyniki: 
 
+typ strony = 1
+
+Długość wierszy:
+1. 1378 bity
+2. 1388
+3. 1374
+4. 1390
+5. 1368
+Liczba wolnych bajtów: 1188
+
+Nie da się wstawić następnego wiersza na tej stronie samej długości
+
+
 ```sql
---  ...
+dbcc traceon (3604);
+dbcc page('adventureworks2017', 1, 2136	, 3);
 ```
+
+typ strony = 4
+
+W tym przypadku mamy typ danych LOB
+
+
+Informacja, którą dysponujemy:
+
+  - Blob Id: Identyfikator Bloba.
+  - Level: Poziom Bloba.
+  - MaxLinks: Maksymalna liczba linków do Bloba.
+  - CurLinks: Aktualna liczba linków do Bloba.
+  - Dzieci: Lista dzieci Bloba, informacje o ich lokalizacji, rozmiarze i przesunięciu.
+
+
+```sql
+dbcc traceon (3604);
+dbcc page('adventureworks2017', 1, 2113, 3);
+```
+
+typ strony = 3
+
+W tym przypadku oprócz Blow ID otrzymujemy dane Bloba jako szestanstkową reprezentację binarnych danych
+
 
 ---
 
