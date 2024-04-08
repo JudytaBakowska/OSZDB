@@ -17,6 +17,7 @@
 ---
 
 **Imię i nazwisko:**
+Judyta Bąkowska, Karolina Źróbek
 
 --- 
 
@@ -232,30 +233,42 @@ Która część zapytania ma największy koszt?
 
 ---
 > Wyniki: 
-
-```sql
---  ...
-```
+>
+>![Alt text](data/lab5/image.png)
+>![Alt text](data/lab5/image-1.png)
+>
+> Największy koszt ma opracja sortowania (order by) 
 
 Jaki indeks można zastosować aby zoptymalizować koszt zapytania? Przygotuj polecenie tworzące index.
 
 
----
-> Wyniki: 
 
 ```sql
---  ...
+
+CREATE NONCLUSTERED INDEX [_dta_index_purchaseorderdetail_9_933578364__K9D_K5_3_4] ON [dbo].[purchaseorderdetail]
+(
+	[RejectedQty] DESC,
+	[ProductID] ASC
+)
+INCLUDE([DueDate],[OrderQty]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
+
+
 ```
 
  Ponownie wykonaj analizę zapytania:
 
 
 ---
-> Wyniki: 
+> Wyniki:
+>
+>![Alt text](data/lab5/image-2.png)
+>![Alt text](data/lab5/image-3.png)
+>
+>Koszt sortowania (87%) w całości został zamieniony na koszt skanowania indeksu (98%). 
 
-```sql
---  ...
-```
+
+
 
 # Zadanie 4
 
@@ -290,10 +303,15 @@ go
 Czy jest widoczna różnica w zapytaniach? Jeśli tak to jaka? Aby wymusić użycie indeksu użyj `WITH(INDEX(Address_PostalCode_1))` po `FROM`:
 
 > Wyniki: 
-
-```sql
---  ...
-```
+>
+>Z użyciem indeksu nr 1:
+>![Alt text](data/lab5/image-12.png)
+>
+>Z użyciem indeksu nr 2:
+>![Alt text](data/lab5/image-11.png)
+>
+>
+>Koszty i czasy wykonania dla obu indeksów są identyczne.
 
 
 Sprawdź rozmiar Indeksów:
@@ -312,10 +330,11 @@ Który jest większy? Jak można skomentować te dwa podejścia do indeksowania?
 
 
 > Wyniki: 
+>
+>![Alt text](data/lab5/image-10.png)
+>
+>Indeks nr 1 jest  mniejszy od indeksu nr 2. Dzieje się tak dlatego, że indeks nr 2 uwzględnia dodatkową kolumnę `postalcode`. Ponieważ plany wykonania są identyczne, a indeks nr 2 zajmuje więcej pamięci, bardziej optymalne jest zastosowanie indeksu nr 1. 
 
-```sql
---  ...
-```
 
 
 # Zadanie 5 – Indeksy z filtrami
@@ -355,19 +374,17 @@ Przeanalizuj plan dla poniższego zapytania:
 Czy indeks został użyty? Dlaczego?
 
 > Wyniki: 
+>![Alt text](data/lab5/image-13.png)
+>![Alt text](data/lab5/image-14.png)
+>Indeks nie został użyty. Indeks nonclustered może być mniej selektywny niż indeks typu clustered, może on obejmować więcej wierszy w wynikach przeszukiwania. W rezultacie, jeśli warunek zapytania dotyczy w sposób rozłączny składowych indeksu, optymalizator może zdecydować, że pełne przeszukiwanie sterty jest bardziej opłacalne niż korzystanie z indeksu nonclustered.
 
-```sql
---  ...
-```
 
 Spróbuj wymusić indeks. Co się stało, dlaczego takie zachowanie?
 
 > Wyniki: 
-
-```sql
---  ...
-```
-
+>![Alt text](data/lab5/image-15.png)
+>![Alt text](data/lab5/image-16.png)
+>Zgodnie z przewidywaniami, widzoczne jest przeszukiwanie sterty (heap).
 
 ---
 
