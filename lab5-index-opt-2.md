@@ -17,7 +17,7 @@
 ---
 
 **Imię i nazwisko:**
-Judyta Bąkowska, Karolina Źróbek
+Judyta Bąkowska, Kraolina Źróbek
 
 --- 
 
@@ -97,17 +97,23 @@ select * from customer where storeid between 594 and 610
 Zanotuj czas zapytania oraz jego koszt koszt:
 
 ---
-> Wyniki: 
+> Wyniki:
+>  
+> Pierwsze zapytanie: 
+> 0.002s
+> 
+> ![Alt text](data/lab5_1_1.png)
+> 
+> Drugie zapytanie:
+> 0,002s
+> ![Alt text](data/lab5_1_2.png)
 
-```sql
---  ...
-```
 
 
 Dodaj indeks:
 
 ```sql
-create clustered index customer_store_cls_idx on customer(storeid)
+create index customer_store_cls_idx on customer(storeid)
 ```
 
 Jak zmienił się plan i czas? Czy jest możliwość optymalizacji?
@@ -115,10 +121,22 @@ Jak zmienił się plan i czas? Czy jest możliwość optymalizacji?
 
 ---
 > Wyniki: 
+>
+> Pierwsze zapytanie: 
+> 0.000s
+> ![Alt text](data/image-3.png)
+> Dwie tak samo kosztowne operacje to: Index Seek i RID Lookup
+> 
+> Drugie zapytanie :
+> 0.000s
+> ![Alt text](data/image-4.png)
+> Tutaj najkosztowniejszą operacją jest RID Lookup
 
-```sql
---  ...
-```
+**Co zmienił indeks?**
+
+> Przyspieszył wyszukiwanie danych tworząc kopię uporządkowanej kolumny. System nie musi przeszukiwać całej tabeli w poszukiwaniu rekordów, ale korzysta z indeksu, który zawiera uporządkowane wartości z danej kolumny.
+
+
 
 
 Dodaj indeks klastrowany:
@@ -132,10 +150,20 @@ Czy zmienił się plan i czas? Skomentuj dwa podejścia w wyszukiwaniu krotek.
 
 ---
 > Wyniki: 
+>
+> Pierwsze zapytanie:
+> 0.000s
+>
+> ![Alt text](data/image-5.png)
+>
+> Drugie zapytanie:
+> 0.000s
+> ![Alt text](data/image-7.png)
+>
+> Widzimy, że pierwsze zapytanie jest bardzo podobne dla obu indeksów - korzysta z wyszukiwania indeksu (Index Seek). Oba mają koszt 0.00s.
+>
+> Na drugim zapytaniu widzimy znaczną różnicę. W przypadku indeksu NonClustered, operacja to połączenie zagnieżdżonych pętli (Nested Loops) z wyszukiwaniem indeksu (Index Seek). W przypadku indeksu Clustered, operacja to również połączenie zagnieżdżonych pętli (Nested Loops), ale zamiast wyszukiwania indeksu, mamy bezpośrednią operację wyszukiwania identyfikatora wiersza (RID Lookup). Obie operacje mają koszt 0.00s.
 
-```sql
---  ...
-```
 
 
 
@@ -177,10 +205,23 @@ Co można o nich powiedzieć?
 
 ---
 > Wyniki: 
+> 
+> Pierwsze zapytanie:
+>0.002s
+>![Alt text](data/image-8.png)
+>
+>Drugie zapytanie:
+>0.001s
+>![Alt text](data/image-9.png)
+>
+>Trzecie zapytanie:
+>0.002s
+>![Alt text](data/image-10.png)
+>
+>W kazdym z tych trzech zapytań jest wykonywane przesiewanie tabeli (Table Scan), co oznacza, że baza danych musi przeszukać całą tabelę w poszukiwaniu pasujących rekordów.
+>
+>Zapytanie 2 wymaga wykonania dwóch operacji filtrowania (po lastname i firstname), co może wpłynąć na całkowity koszt operacji w porównaniu do zapytań 1 i 3, które wymagają tylko jednej operacji filtrowania.
 
-```sql
---  ...
-```
 
 Przygotuj indeks obejmujący te zapytania:
 
@@ -193,11 +234,24 @@ Sprawdź plan zapytania. Co się zmieniło?
 
 
 ---
-> Wyniki: 
+> Wyniki:  
+>
+>Zapytanie pierwsze:
+>0.000s
+>![Alt text](data/image-11.png)
+>
+>Zapytanie drugie:
+>0.000s
+>![Alt text](data/image-12.png)
+>
+>Zapytanie trzecie:
+>0.001s
+>![Alt text](data/image-13.png)
+>
+>W kazdym zapytaniu zamiast pełnego przesiewania tabeli (Table Scan), teraz wykorzystywane jest wyszukiwanie indeksu (Index Seek) na indeksie niemieszanym (NonClustered) person_first_last_name_idx.
+>
+>Dodanie indeksu obejmującego kolumny lastname i firstname pozwoliło każdemu z zapytań skorzystać z wyszukiwania indeksu, co znacząco zmniejszyło koszt operacji i poprawiło wydajność zapytań. 
 
-```sql
---  ...
-```
 
 
 Przeprowadź ponownie analizę zapytań tym razem dla parametrów: `FirstName = ‘Angela’` `LastName = ‘Price’`. (Trzy zapytania, różna kombinacja parametrów). 
@@ -207,10 +261,25 @@ Czym różni się ten plan od zapytania o `'Osarumwense Agbonile'` . Dlaczego ta
 
 ---
 > Wyniki: 
-
-```sql
---  ...
-```
+>
+>![Alt text](data/image-14.png)
+>
+>Pierwsze zapytanie:
+>
+>![Alt text](data/image-15.png)
+>
+>Drugie zapytanie:
+>![Alt text](data/image-16.png)
+>
+>Trzecie zapytanie:
+>
+>![Alt text](data/image-17.png)
+>
+>Rózni się tym ze w pierszym i trzecim zapytaniu jest wykorzystywane 'Table Scan' do przeszukiwania tabeli 
+>
+>Zachowanie indeksów i planów wykonania zależy od konkretnych warunków zapytań i dostępności indeksów. W przypadku zapytań dotyczących 'Angela Price', dostępność indeksów i konkretna kombinacja warunków powoduje, że baza danych może wybrać różne strategie wykonania zapytań.
+>
+>Jeśli kolejność warunków nie jest optymalna dla dostępnego indeksu, baza danych może zdecydować się na inne strategie wykonania, takie jak pełne przesiewanie tabeli (Table Scan) lub inne operacje filtrowania.
 
 
 # Zadanie 3
