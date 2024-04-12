@@ -102,11 +102,11 @@ Zanotuj czas zapytania oraz jego koszt koszt:
 > Pierwsze zapytanie: 
 > 0.002s
 > 
-> ![Alt text](data/lab5_1_1.png)
+> ![Alt text](data/lab5/zad1-2/lab5_1_1.png)
 > 
 > Drugie zapytanie:
 > 0,002s
-> ![Alt text](data/lab5_1_2.png)
+> ![Alt text](data/lab5/zad1-2/lab5_1_2.png)
 
 
 
@@ -124,12 +124,12 @@ Jak zmienił się plan i czas? Czy jest możliwość optymalizacji?
 >
 > Pierwsze zapytanie: 
 > 0.000s
-> ![Alt text](data/image-3.png)
+> ![Alt text](data/lab5/zad1-2/image-3.png)
 > Dwie tak samo kosztowne operacje to: Index Seek i RID Lookup
 > 
 > Drugie zapytanie :
 > 0.000s
-> ![Alt text](data/image-4.png)
+> ![Alt text](data/lab5/zad1-2/image-4.png)
 > Tutaj najkosztowniejszą operacją jest RID Lookup
 
 **Co zmienił indeks?**
@@ -154,11 +154,11 @@ Czy zmienił się plan i czas? Skomentuj dwa podejścia w wyszukiwaniu krotek.
 > Pierwsze zapytanie:
 > 0.000s
 >
-> ![Alt text](data/image-5.png)
+> ![Alt text](data/lab5/zad1-2/image-5.png)
 >
 > Drugie zapytanie:
 > 0.000s
-> ![Alt text](data/image-7.png)
+> ![Alt text](data/lab5/zad1-2/image-7.png)
 >
 > Widzimy, że pierwsze zapytanie jest bardzo podobne dla obu indeksów - korzysta z wyszukiwania indeksu (Index Seek). Oba mają koszt 0.00s.
 >
@@ -208,15 +208,15 @@ Co można o nich powiedzieć?
 > 
 > Pierwsze zapytanie:
 >0.002s
->![Alt text](data/image-8.png)
+>![Alt text](data/lab5/zad1-2/image-8.png)
 >
 >Drugie zapytanie:
 >0.001s
->![Alt text](data/image-9.png)
+>![Alt text](data/lab5/zad1-2/image-9.png)
 >
 >Trzecie zapytanie:
 >0.002s
->![Alt text](data/image-10.png)
+>![Alt text](data/lab5/zad1-2/image-10.png)
 >
 >W kazdym z tych trzech zapytań jest wykonywane przesiewanie tabeli (Table Scan), co oznacza, że baza danych musi przeszukać całą tabelę w poszukiwaniu pasujących rekordów.
 >
@@ -238,15 +238,15 @@ Sprawdź plan zapytania. Co się zmieniło?
 >
 >Zapytanie pierwsze:
 >0.000s
->![Alt text](data/image-11.png)
+>![Alt text](data/lab5/zad1-2/image-11.png)
 >
 >Zapytanie drugie:
 >0.000s
->![Alt text](data/image-12.png)
+>![Alt text](data/lab5/zad1-2/image-12.png)
 >
 >Zapytanie trzecie:
 >0.001s
->![Alt text](data/image-13.png)
+>![Alt text](data/lab5/zad1-2/image-13.png)
 >
 >W kazdym zapytaniu zamiast pełnego przesiewania tabeli (Table Scan), teraz wykorzystywane jest wyszukiwanie indeksu (Index Seek) na indeksie niemieszanym (NonClustered) person_first_last_name_idx.
 >
@@ -262,18 +262,18 @@ Czym różni się ten plan od zapytania o `'Osarumwense Agbonile'` . Dlaczego ta
 ---
 > Wyniki: 
 >
->![Alt text](data/image-14.png)
+>![Alt text](data/lab5/zad1-2/image-14.png)
 >
 >Pierwsze zapytanie:
 >
->![Alt text](data/image-15.png)
+>![Alt text](data/lab5/zad1-2/image-15.png)
 >
 >Drugie zapytanie:
->![Alt text](data/image-16.png)
+>![Alt text](data/lab5/zad1-2/image-16.png)
 >
 >Trzecie zapytanie:
 >
->![Alt text](data/image-17.png)
+>![Alt text](data/lab5/zad1-2/image-17.png)
 >
 >Rózni się tym ze w pierszym i trzecim zapytaniu jest wykorzystywane 'Table Scan' do przeszukiwania tabeli 
 >
@@ -303,8 +303,8 @@ Która część zapytania ma największy koszt?
 ---
 > Wyniki: 
 >
->![Alt text](data/lab5/image.png)
->![Alt text](data/lab5/image-1.png)
+>![Alt text](data/lab5/zad3-5/image.png)
+>![Alt text](data/lab5/zad3-5/image-1.png)
 >
 > Największy koszt ma opracja sortowania (order by) 
 
@@ -331,8 +331,8 @@ go
 ---
 > Wyniki:
 >
->![Alt text](data/lab5/image-2.png)
->![Alt text](data/lab5/image-3.png)
+>![Alt text](data/lab5/zad3-5/image-2.png)
+>![Alt text](data/lab5/zad3-5/image-3.png)
 >
 >Koszt sortowania (87%) w całości został zamieniony na koszt skanowania indeksu (98%). 
 
@@ -374,10 +374,10 @@ Czy jest widoczna różnica w zapytaniach? Jeśli tak to jaka? Aby wymusić uży
 > Wyniki: 
 >
 >Z użyciem indeksu nr 1:
->![Alt text](data/lab5/image-12.png)
+>![Alt text](data/lab5/zad3-5/image-12.png)
 >
 >Z użyciem indeksu nr 2:
->![Alt text](data/lab5/image-11.png)
+>![Alt text](data/lab5/zad3-5/image-11.png)
 >
 >
 >Koszty i czasy wykonania dla obu indeksów są identyczne.
@@ -400,7 +400,7 @@ Który jest większy? Jak można skomentować te dwa podejścia do indeksowania?
 
 > Wyniki: 
 >
->![Alt text](data/lab5/image-10.png)
+>![Alt text](data/lab5/zad3-5/image-10.png)
 >
 >Indeks nr 1 jest  mniejszy od indeksu nr 2. Dzieje się tak dlatego, że indeks nr 2 uwzględnia dodatkową kolumnę `postalcode`. Ponieważ plany wykonania są identyczne, a indeks nr 2 zajmuje więcej pamięci, bardziej optymalne jest zastosowanie indeksu nr 1. 
 
@@ -443,16 +443,16 @@ Przeanalizuj plan dla poniższego zapytania:
 Czy indeks został użyty? Dlaczego?
 
 > Wyniki: 
->![Alt text](data/lab5/image-13.png)
->![Alt text](data/lab5/image-14.png)
+>![Alt text](data/lab5/zad3-5/image-13.png)
+>![Alt text](data/lab5/zad3-5/image-14.png)
 >Indeks nie został użyty. Indeks nonclustered może być mniej selektywny niż indeks typu clustered, może on obejmować więcej wierszy w wynikach przeszukiwania. W rezultacie, jeśli warunek zapytania dotyczy w sposób rozłączny składowych indeksu, optymalizator może zdecydować, że pełne przeszukiwanie sterty jest bardziej opłacalne niż korzystanie z indeksu nonclustered.
 
 
 Spróbuj wymusić indeks. Co się stało, dlaczego takie zachowanie?
 
 > Wyniki: 
->![Alt text](data/lab5/image-15.png)
->![Alt text](data/lab5/image-16.png)
+>![Alt text](data/lab5/zad3-5/image-15.png)
+>![Alt text](data/lab5/zad3-5/image-16.png)
 >Zgodnie z przewidywaniami, widzoczne jest przeszukiwanie sterty (heap).
 
 ---
