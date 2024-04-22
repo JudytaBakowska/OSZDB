@@ -381,9 +381,9 @@ from sys.dm_db_index_physical_stats (db_id('adventureworks2017')
 
 Jakie są według Ciebie najważniejsze pola?
 
-![alt text](data/zad3_1.png)
-![alt text](data/zad3_2.png)
-![alt text](data/zad3_3.png)
+![alt text](zad3_1.png)
+![alt text](zad3_2.png)
+![alt text](zad3_3.png)
 
 ---
 > Wyniki: 
@@ -425,7 +425,7 @@ and index_id not in (0) --only clustered and nonclustered indexes
 > Wyniki: 
 > zrzut ekranu/komentarz:
 
-![alt text](data/zad3_reorganisation.png)
+![alt text](zad3_reorganisation.png)
  W bazie 'AdventureWorks2017' znaleziono 5 tabel mających po jednym indeksie wymagającym reorganizacji:
 - `JobCandidate` - indeks o ID 1
 - `ProductModel` - indeks o ID 1
@@ -459,7 +459,7 @@ and index_id not in (0) --only clustered and nonclustered indexes
 > Wyniki: 
 > zrzut ekranu/komentarz:
 
-![alt text](data/zad3_rebuild.png)
+![alt text](zad3_rebuild.png)
 
 W bazie danych `AdventureWorks2017`, indeksy z tabeli `Person` wymagające przebudowy to:
 
@@ -488,7 +488,7 @@ Sprawdź co przechowuje tabela sys.dm_db_index_usage_stats:
 ---
 > Wyniki: 
 
-![alt text](data/zad3_tabel.png)
+![alt text](zad3_tabel.png)
 ---
 
 

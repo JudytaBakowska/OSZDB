@@ -136,10 +136,10 @@ Włącz dwie opcje: **Include Actual Execution Plan** oraz **Include Live Query 
 
 
 
-<!-- ![[data/index1-1.png | 500]] -->
+<!-- ![[data/lab4/index1-1.png | 500]] -->
 
 
-<img src="data/index1-1.png" alt="image" width="500" height="auto">
+<img src="data/lab4/index1-1.png" alt="image" width="500" height="auto">
 
 
 Teraz wykonaj poszczególne zapytania (najlepiej każde analizuj oddzielnie). Co można o nich powiedzieć? Co sprawdzają? Jak można je zoptymalizować?  
@@ -150,25 +150,25 @@ Teraz wykonaj poszczególne zapytania (najlepiej każde analizuj oddzielnie). Co
 
 >**Zapytanie 1:**
 Wybiera wszystkie kolumny z tabeli salesorderheader oraz salesorderdetail, gdzie data zamówienia (orderdate) wynosi '2008-06-01 00:00:00.000'.
-<img src="data/zad1_zap1.png" alt="image" width="500" height="auto">
+<img src="data/lab4/zad1_zap1.png" alt="image" width="500" height="auto">
 
 
 >**Zapytanie 2:**
 Wybiera datę zamówienia (orderdate), identyfikator produktu (productid), sumę zamówionych ilości (orderqty), sumę rabatu jednostkowego (unitpricediscount) oraz sumę całkowitą linii (linetotal) z tabel salesorderheader i salesorderdetail.
 Wyniki grupowane są według daty zamówienia i identyfikatora produktu.
 Tylko te wyniki, gdzie suma zamówionych ilości jest większa lub równa 100, są uwzględniane.
-<img src="data/zad1_zap2.png" alt="image" width="500" height="auto">
+<img src="data/lab4/zad1_zap2.png" alt="image" width="500" height="auto">
 
 >**Zapytanie 3:**
 Wybiera numery zamówienia (salesordernumber), numery zamówienia zakupu (purchaseordernumber), datę płatności (duedate) oraz datę wysyłki (shipdate) z tabel salesorderheader i salesorderdetail.
 Wyniki ograniczane są do tych, gdzie data zamówienia jest jedną z dat: '2008-06-01', '2008-06-02', '2008-06-03', '2008-06-04', '2008-06-05'.
-<img src="data/zad1_zap3.png" alt="image" width="500" height="auto">
+<img src="data/lab4/zad1_zap3.png" alt="image" width="500" height="auto">
 
 >**Zapytanie 4:**
 Wybiera identyfikator zamówienia (salesorderid), numer zamówienia (salesordernumber), numer zamówienia zakupu (purchaseordernumber), datę płatności (duedate) oraz datę wysyłki (shipdate) z tabel salesorderheader i salesorderdetail.
 Wyniki ograniczane są do tych, gdzie numer śledzenia przewoźnika (carriertrackingnumber) jest jednym z podanych: 'ef67-4713-bd', '6c08-4c4c-b8'.
 Wyniki sortowane są według identyfikatora zamówienia (salesorderid) rosnąco.
-<img src="data/zad1_zap4.png" alt="image" width="500" height="auto">
+<img src="data/lab4/zad1_zap4.png" alt="image" width="500" height="auto">
 
 >**Optymalizacja**
 >
@@ -192,9 +192,9 @@ Wyniki sortowane są według identyfikatora zamówienia (salesorderid) rosnąco.
 
 Zaznacz wszystkie zapytania, i uruchom je w **Database Engine Tuning Advisor**:
 
-<!-- ![[data/index1-12.png | 500]] -->
+<!-- ![[data/lab4/index1-12.png | 500]] -->
 
-<img src="data/index1-2.png" alt="image" width="500" height="auto">
+<img src="data/lab4/index1-2.png" alt="image" width="500" height="auto">
 
 
 Sprawdź zakładkę **Tuning Options**, co tam można skonfigurować?
@@ -232,9 +232,9 @@ Keep Aligned Partitioning: Zachowuje tylko partycjonowanie zgodne.
 
 Użyj **Start Analysis**:
 
-<!-- ![[data/index1-3.png | 500]] -->
+<!-- ![[data/lab4/index1-3.png | 500]] -->
 
-<img src="data/index1-3.png" alt="image" width="500" height="auto">
+<img src="data/lab4/index1-3.png" alt="image" width="500" height="auto">
 
 
 Zaobserwuj wyniki w **Recommendations**.
@@ -242,9 +242,9 @@ Zaobserwuj wyniki w **Recommendations**.
 Przejdź do zakładki **Reports**. Sprawdź poszczególne raporty. Główną uwagę zwróć na koszty i ich poprawę:
 
 
-<!-- ![[data/index4-1.png | 500]] -->
+<!-- ![[data/lab4/index4-1.png | 500]] -->
 
-<img src="data/index1-4.png" alt="image" width="500" height="auto">
+<img src="data/lab4/index1-4.png" alt="image" width="500" height="auto">
 
 
 Zapisz poszczególne rekomendacje:
@@ -331,24 +331,24 @@ Sprawdź jak zmieniły się Execution Plany. Opisz zmiany:
 >
 >Po zastosowaniu indeksu na kolumnie OrderDate w tabeli salesorderheader oraz indeksu na kolumnie SalesOrderID w tabeli salesorderdetail, optymalizator zapytań może wykorzystać te indeksy do szybkiego odnalezienia odpowiednich wierszy. Plan wykonania może więc zawierać operację indeksowego skanu (index scan) lub indeksowego poszukiwania (index seek), co przyspieszy filtrację wyników.
 Zapytanie 2 (grupowanie po dacie zamówienia i identyfikatorze produktu):
-><img src="data/zad2_zap1_1.png" alt="image" width="500" height="auto">
+><img src="data/lab4/zad2_zap1_1.png" alt="image" width="500" height="auto">
 
 >**Zapytanie 2:**
 >
 >Dodanie indeksu złożonego na kolumnach OrderDate i ProductID w tabeli salesorderheader pozwoli na efektywne grupowanie danych. Optymalizator zapytań może wykorzystać ten indeks, co może spowodować zmianę planu wykonania na bardziej wydajny, wykorzystujący indeksowe operacje grupowania (index grouping operations).
-><img src="data/zad2_zap2.png" alt="image" width="500" height="auto">
+><img src="data/lab4/zad2_zap2.png" alt="image" width="500" height="auto">
 
 >
 >**Zapytanie 3:**
 >
 >Zastosowanie indeksu na kolumnie OrderDate w tabeli salesorderheader pozwoli na szybkie odnalezienie odpowiednich zamówień na podstawie daty zamówienia. Plan wykonania może zawierać indeksowe poszukiwanie (index seek) lub indeksowy skan (index scan), co przyspieszy filtrowanie wyników.
-> <img src="data/zad2_zap3.png" alt="image" width="500" height="auto">
+> <img src="data/lab4/zad2_zap3.png" alt="image" width="500" height="auto">
 
 
 > **Zapytanie 4:**
 >
 >Dodanie indeksu na kolumnie CarrierTrackingNumber w tabeli salesorderdetail umożliwi szybkie odnalezienie odpowiednich zamówień na podstawie numeru śledzenia przewoźnika. Optymalizator zapytań może wykorzystać ten indeks do przyspieszenia operacji filtrowania. Plan wykonania może więc zawierać indeksowe poszukiwanie (index seek) lub indeksowy skan (index scan), zamiast pełnego skanu tabeli, co znacząco poprawi wydajność zapytania.
-><img src="data/zad2_zap4.png" alt="image" width="500" height="auto">
+><img src="data/lab4/zad2_zap4.png" alt="image" width="500" height="auto">
 ---
 
 
@@ -546,7 +546,7 @@ ALTER INDEX XMLVALUE_Person_Demographics ON Person.Person rebuild;
 ## Dokumentacja
 
 Celem kolejnego zadania jest zapoznanie się z fizyczną budową strony indeksu 
-- [https://www.mssqltips.com/sqlservertip/1578/using-dbcc-page-to-examine-sql-server-table-and-index-data/](https://www.mssqltips.com/sqlservertip/1578/using-dbcc-page-to-examine-sql-server-table-and-index-data/)
+- [https://www.mssqltips.com/sqlservertip/1578/using-dbcc-page-to-examine-sql-server-table-and-index-data/lab4/](https://www.mssqltips.com/sqlservertip/1578/using-dbcc-page-to-examine-sql-server-table-and-index-data/lab4/)
 - [https://www.mssqltips.com/sqlservertip/2082/understanding-and-examining-the-uniquifier-in-sql-server/](https://www.mssqltips.com/sqlservertip/2082/understanding-and-examining-the-uniquifier-in-sql-server/)
 - [http://www.sqlskills.com/blogs/paul/inside-the-storage-engine-using-dbcc-page-and-dbcc-ind-to-find-out-if-page-splits-ever-roll-back/](http://www.sqlskills.com/blogs/paul/inside-the-storage-engine-using-dbcc-page-and-dbcc-ind-to-find-out-if-page-splits-ever-roll-back/)
 
