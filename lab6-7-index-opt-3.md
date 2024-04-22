@@ -17,6 +17,7 @@
 ---
 
 **Imię i nazwisko:**
+Judyta Bąkowska, Karolina Źróbek
 
 --- 
 
@@ -270,6 +271,7 @@ Do analizy, proszę uwzględnić następujące rodzaje indeksów:
 Proszę przygotować zestaw zapytań do danych, które:
 - wykorzystują poszczególne indeksy
 - które przy wymuszeniu indeksu działają gorzej, niż bez niego (lub pomimo założonego indeksu, tabela jest w pełni skanowana)
+
 Odpowiedź powinna zawierać:
 - Schemat tabeli
 - Opis danych (ich rozmiar, zawartość, statystyki)
