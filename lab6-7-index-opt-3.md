@@ -108,9 +108,20 @@ Skomentuj oba zapytania. Czy indeks został użyty w którymś zapytaniu, dlacze
 ---
 > Wyniki: 
 
-```sql
---  ...
-```
+> Plan zapytania pierwszego zapytania:
+![Alt text](data/lab6_1_1.png)
+
+>Komentarz:
+>To zapytanie korzysta z indeksu, ponieważ warunki w zapytaniu są identyczne z warunkami w indeksie (ProductSubcategoryID >= 27 AND ProductSubcategoryID <= 36). Dodatkowo, indeksy są szczególnie skuteczne przy zapytaniach, które obejmują znacznie mniejsze fragmenty danych niż cała tabela. 
+
+> Plan zapytania drugiego zapytania:
+![Alt text](data/lab6_1_2.png)
+
+>Komentarz:
+>W tym przypadku indeks nie został użyty, ponieważ warunki w zapytaniu i te w indeksie są wzajemnie wykluczające się (są rozdzielne). Indeks jest aktywowany tylko wtedy, gdy warunki w zapytaniu dokładnie odpowiadają warunkom w indeksie.
+
+>Ogólnie rzecz biorąc, indeksy z warunkiem są używane tylko dla tych wierszy, które spełniają warunki określone w filtrze zapytania. Jeśli warunki w zapytaniu nie są zgodne z warunkami w indeksie, indeks nie zostanie wykorzystany.
+
 
 
 
@@ -167,23 +178,16 @@ Dodaj sortowanie według OrderDate ASC i DESC. Czy indeks działa w obu przypadk
 
 ---
 > Wyniki: 
->
->Bez sortowania:
->![Alt text](data/lab6/zad2/image-7.png)
->
->Sortowanie po dacie ASC:
->![Alt text](data/lab6/zad2/image-5.png)
->
->Sortowanie po dacie DESC:
->![Alt text](data/lab6/zad2/image-6.png)
->
->Indeks działa identycznie dla obu sortowań jak i dla braku sortowania. W planie wykonania nie ma operacji sortowania. Dzieje się tak dlatego, że clustered index przechowuje dane posortowane. Niezaleznie od kolejności sortowania na cele zapytania (DESC/ASC) nie jest przeprowadzane dodatkowe sortowanie danych.
+
+```sql
+--  ...
+```
+
 
 # Zadanie 3 – indeksy column store
 
 
-Celem zadania jest poznanie indeksów typu column store
-![](file:////Users/rm/Library/Group%20Containers/UBF8T346G9.Office/TemporaryItems/msohtmlclip/clip_image001.jpg)
+Celem zadania jest poznanie indeksów typu column store![](file:////Users/rm/Library/Group%20Containers/UBF8T346G9.Office/TemporaryItems/msohtmlclip/clip_image001.jpg)
 
 Utwórz tabelę testową:
 
@@ -282,7 +286,7 @@ Odpowiedź powinna zawierać:
 - Sprawdzenie, co proponuje Database Engine Tuning Advisor (porównanie czy udało się Państwu znaleźć odpowiednie indeksy do zapytania)
 
 
-> ### Eksperyment 1 - wykorzystanie indeksu kolumnowego
+> ### Analiza 1 - wykorzystanie indeksu kolumnowego
 > Eksperyment pozwoli na stwoerdzenie w jakich sytuacjach optymalizator odrzuca wykorzystanie indeksu kolumnowego.
 >
 > Przygotowanie: 
@@ -353,7 +357,7 @@ WHERE SaleDate > '2024-04-22'
 > Zgodnie z przewidywaniami tym razem opłacalne jest wykorzystanie za równo kolumnowego jak i nonclustered:
 > ![alt text](data/lab6/zad4/image-2.png)
 
-> ### Eksperyment 2 - wykorzystanie indeksu warunkowego
+> ### Analiza 2 - wykorzystanie indeksu warunkowego
 > Dla tabeli `SalesExampleTable` zakładamy indeks warunkowy na tych samych polach co uprzedmio indeks nieklastrowany:
 ```sql 
 CREATE INDEX IX_Filtered ON SalesExapleTable(SaleDate)
@@ -379,6 +383,177 @@ WHERE SaleDate > '2024-02-22'
 
 
 
+ 
+### Analiza 3 - Wykorzystanie indeksu klastrowanego, wykorzystującego kilka atrybutów, kolumnowego
+
+Stworzenie własnych tabel w bazie danych:
+
+```sql
+-- Create Products table
+CREATE TABLE Products (
+    ProductID INT PRIMARY KEY IDENTITY(1,1),
+    ProductName NVARCHAR(255),
+    Category NVARCHAR(50),
+    Price DECIMAL(10, 2),
+    Descriptions NVARCHAR(1000)
+);
+
+-- Create Orders table
+CREATE TABLE Orders (
+    OrderID INT PRIMARY KEY IDENTITY(1,1),
+    ProductID INT,
+    ClientID INT,
+    OrderDate DATE,
+    Status NVARCHAR(50),
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+);
+```
+Wypełnienie tabel danymi:
+
+```sql
+-- Generate sample data for Products table
+DECLARE @i INT = 1;
+
+WHILE @i <= 6000
+BEGIN
+    INSERT INTO Products (ProductName, Category, Price, Descriptions)
+    VALUES 
+    ('Laptop' + CAST(@i AS VARCHAR), 'Electronics', RAND() * 5000, 'Description for Laptop' + CAST(@i AS VARCHAR)),
+    ('Phone' + CAST(@i AS VARCHAR), 'Electronics', RAND() * 3000, 'Description for Phone' + CAST(@i AS VARCHAR)),
+    ('Book' + CAST(@i AS VARCHAR), 'Books', RAND() * 200, 'Description for Book' + CAST(@i AS VARCHAR)),
+    ('Shoes' + CAST(@i AS VARCHAR), 'Clothing', RAND() * 600, 'Description for Shoes' + CAST(@i AS VARCHAR));
+    
+    SET @i = @i + 1;
+END;
+
+
+-- Generate sample data for Orders table
+DECLARE @j INT = 1;
+
+WHILE @j <= 8000
+BEGIN
+    INSERT INTO Orders (ProductID, ClientID, OrderDate, Status)
+    VALUES 
+    (ROUND(RAND() * 1000, 0) + 1, ROUND(RAND() * 200, 0) + 1, DATEADD(day, ROUND(RAND() * 30, 0) - 15, '2024-04-01'), 
+    CASE 
+        WHEN RAND() < 0.3 THEN 'In Progress'
+        WHEN RAND() BETWEEN 0.3 AND 0.7 THEN 'Completed'
+        ELSE 'Cancelled'
+    END);
+    
+    SET @j = @j + 1;
+END;
+
+```
+
+### **Opis danych:**
+
+#### **Tabela Products:**
+
+Rozmiar: 28,000 wierszy
+
+Zawartość: Różne produkty elektroniczne, książki i buty z cenami i opisami.
+
+Statystyki:
+
+Średnia cena: ~2,200 zł
+
+Kategorie: Elektronika, Ksiązki, Ubrania
+
+#### **Tabela zamówień:**
+
+Rozmiar: 8000 wierszy
+
+Zawartość: Losowe zamówienia z produktami, identyfikatorami klientów, datami zamówień i statusami.
+
+Statystyki:
+
+Średnia data zamówienia: Około kwietnia 2024 r.
+
+Statusy: Zrealizowane, W trakcie realizacji, Anulowane
+
+**INDEKSY:**
+
+1. Klastrowany indeks na OrderDate w tabeli Orders
+```sql
+CREATE CLUSTERED INDEX idx_OrderDate ON Orders(OrderDate);
+``` 
+Opis: Klastrowany indeks dla atrybutu OrderDate.
+
+Zapytanie: 
+```sql
+SELECT * FROM Orders WHERE OrderDate BETWEEN '2024-04-01' AND '2024-04-10';
+```
+Plan wykonania zapytania:
+![Alt text](data/lab6_4_1.png)
+
+Komentarz:
+Zapytanie wykorzystuje klastrowany indeks na OrderDate, co przyspiesza wyszukiwanie. Plan wykonania zapytania pokazuje, że zapytanie korzysta z indeksu, co skraca czas wykonania zapytania.
+
+2. Indeks wykorzystujący NazwaProduktu i Kategoria w tabeli Products
+
+```sql
+CREATE NONCLUSTERED INDEX idx_NazwaKategoria ON Products(ProductName, Category);
+```
+Opis: Nieklastrowany indeks dla atrybutów ProductName i Category.
+
+Zapytanie:
+```sql
+SELECT * FROM Products WHERE ProductName = 'Laptop500' AND Category = 'Electronics';
+```
+Plan wykonania zapytania:
+![Alt text](data/lab6_4_2.png)
+
+Komentarz:
+
+>Plan wykonania jest optymalny, korzystając głównie z indeksu na kolumnie ProductName i Category.
+
+>W rzeczywistości, 49% kosztu zapytania jest związane z wyszukiwaniem w indeksie, co jest pozytywnym znakiem.
+>Jednak pozostałe 51% kosztu zapytania pochodzi z operacji Key Lookup, co oznacza, że dodatkowo musi być dokonywane wyszukiwanie w głównym indeksie (kluczu głównym) w celu odnalezienia pozostałych kolumn (tutaj chodzi o gwiazdkę "*"). Ten Key Lookup może być wynikiem braku włączenia wszystkich kolumn w indeksie nieklastrowanym.
+
+>W takim przypadku, jeśli często potrzebowalibyśmy pobierać wszystkie kolumny z tabeli Products w zapytaniach, moglibyśmy dodać wszystkie kolumny do indeksu jako kolumny włączone (INCLUDE), co pozwoliłoby uniknąć konieczności dodatkowych operacji Key Lookup.
+
+3. Filtered Index na Status w tabeli Orders
+```sql
+CREATE NONCLUSTERED COLUMNSTORE INDEX idx_CompletedOrders ON Orders(Status)
+WHERE Status = 'Completed';
+```
+Opis: Filtered Index dla zamówień z statusu 'Completed'.
+
+Zapytanie:
+```sql
+SELECT * FROM Orders WHERE Status = 'Completed';
+```
+Plan wykonania zapytania:
+![Alt text](data/lab6_4_3.png)
+
+Komentarz:
+>Mimo istnienia indeksu warunkowego na kolumnie Status, plan wykonania wybiera skanowanie klastrowanego indeksu idx_OrderDate. Może to być wynikiem wielu czynników, takich jak rozmiar tabeli, aktualne statystyki, czy konfiguracja serwera, które wpływają na ostateczny wybór optymalnego planu wykonania zapytania.
+
+Zapytanie z wymuszeniem indeksu:
+```sql
+SELECT * FROM Orders WITH(INDEX(idx_CompletedOrders)) WHERE Status = 'Completed';
+```
+Plan wykonania zapytania:
+![Alt text](data/lab6_4_4.png)
+
+Komentarz:
+>Teraz operacja Index Seek wykonuje się na tym indeksie, ale koszt tej operacji jest niewielki (tylko 1%). Głównym kosztem jest operacja Key Lookup, która wynosi 97%.
+
+#### Aby zredukować koszt operacji Key Lookup i bardziej efektywnie wykorzystać indeks idx_CompletedOrders, mozemy dodać brakujące kolumny do indeksu
+
+```sql
+DROP INDEX idx_CompletedOrders ON Orders;
+
+CREATE NONCLUSTERED INDEX idx_CompletedOrders ON Orders(Status) INCLUDE (OrderID, ProductID, ClientID)
+WHERE Status = 'Completed';
+```
+
+Plan wykonania zapytania:
+![Alt text](data/lab6_4_5.png)
+
+Komentarz:
+>W ten sposób indeks idx_Completed_Orders jest uzywany jako jedyny w zapytaniu, ale to nie jest dobre rozwiązanie problemu, poniewaz dodawanie wielu kolumn do indeksu jako kolumny włączone (INCLUDE) może być problematyczne, szczególnie gdy kolumn jest bardzo dużo lub mają dużą objętość danych.
 
 
 |         |     |     |     |
