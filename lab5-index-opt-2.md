@@ -17,6 +17,7 @@
 ---
 
 **Imię i nazwisko:**
+Judyta Bąkowska, Kraolina Źróbek
 
 --- 
 
@@ -97,15 +98,15 @@ Zanotuj czas zapytania oraz jego koszt koszt:
 
 ---
 > Wyniki:
-
-Pierwsze zapytanie: 
-0.002s
-
-![Alt text](data/lab5_1_1.png)
-
-Drugie zapytanie:
-0,002s
-![Alt text](data/lab5_1_2.png)
+>  
+> Pierwsze zapytanie: 
+> 0.002s
+> 
+> ![Alt text](data/lab5/zad1-2/lab5_1_1.png)
+> 
+> Drugie zapytanie:
+> 0,002s
+> ![Alt text](data/lab5/zad1-2/lab5_1_2.png)
 
 
 
@@ -120,20 +121,20 @@ Jak zmienił się plan i czas? Czy jest możliwość optymalizacji?
 
 ---
 > Wyniki: 
-
-Pierwsze zapytanie: 
-0.000s
-![Alt text](data/image-3.png)
-Dwie tak samo kosztowne operacje to: Index Seek i RID Lookup
-
-Drugie zapytanie :
-0.000s
-![Alt text](data/image-4.png)
-Tutaj najkosztowniejszą operacją jest RID Lookup
+>
+> Pierwsze zapytanie: 
+> 0.000s
+> ![Alt text](data/lab5/zad1-2/image-3.png)
+> Dwie tak samo kosztowne operacje to: Index Seek i RID Lookup
+> 
+> Drugie zapytanie :
+> 0.000s
+> ![Alt text](data/lab5/zad1-2/image-4.png)
+> Tutaj najkosztowniejszą operacją jest RID Lookup
 
 **Co zmienił indeks?**
 
-Przyspieszył wyszukiwanie danych tworząc kopię uporządkowanej kolumny. System nie musi przeszukiwać całej tabeli w poszukiwaniu rekordów, ale korzysta z indeksu, który zawiera uporządkowane wartości z danej kolumny.
+> Przyspieszył wyszukiwanie danych tworząc kopię uporządkowanej kolumny. System nie musi przeszukiwać całej tabeli w poszukiwaniu rekordów, ale korzysta z indeksu, który zawiera uporządkowane wartości z danej kolumny.
 
 
 
@@ -149,21 +150,20 @@ Czy zmienił się plan i czas? Skomentuj dwa podejścia w wyszukiwaniu krotek.
 
 ---
 > Wyniki: 
+>
+> Pierwsze zapytanie:
+> 0.000s
+>
+> ![Alt text](data/lab5/zad1-2/image-5.png)
+>
+> Drugie zapytanie:
+> 0.000s
+> ![Alt text](data/lab5/zad1-2/image-7.png)
+>
+> Widzimy, że pierwsze zapytanie jest bardzo podobne dla obu indeksów - korzysta z wyszukiwania indeksu (Index Seek). Oba mają koszt 0.00s.
+>
+> Na drugim zapytaniu widzimy znaczną różnicę. W przypadku indeksu NonClustered, operacja to połączenie zagnieżdżonych pętli (Nested Loops) z wyszukiwaniem indeksu (Index Seek). W przypadku indeksu Clustered, operacja to również połączenie zagnieżdżonych pętli (Nested Loops), ale zamiast wyszukiwania indeksu, mamy bezpośrednią operację wyszukiwania identyfikatora wiersza (RID Lookup). Obie operacje mają koszt 0.00s.
 
-Pierwsze zapytanie:
-0.000s
-
-![Alt text](data/image-5.png)
-
-Drugie zapytanie:
-0.000s
-![Alt text](data/image-7.png)
-
-``` 
-Widzimy, że pierwsze zapytanie jest bardzo podobne dla obu indeksów - korzysta z wyszukiwania indeksu (Index Seek). Oba mają koszt 0.00s.
-
-Na drugim zapytaniu widzimy znaczną różnicę. W przypadku indeksu NonClustered, operacja to połączenie zagnieżdżonych pętli (Nested Loops) z wyszukiwaniem indeksu (Index Seek). W przypadku indeksu Clustered, operacja to również połączenie zagnieżdżonych pętli (Nested Loops), ale zamiast wyszukiwania indeksu, mamy bezpośrednią operację wyszukiwania identyfikatora wiersza (RID Lookup). Obie operacje mają koszt 0.00s.
-```
 
 
 
@@ -205,24 +205,23 @@ Co można o nich powiedzieć?
 
 ---
 > Wyniki: 
+> 
+> Pierwsze zapytanie:
+>0.002s
+>![Alt text](data/lab5/zad1-2/image-8.png)
+>
+>Drugie zapytanie:
+>0.001s
+>![Alt text](data/lab5/zad1-2/image-9.png)
+>
+>Trzecie zapytanie:
+>0.002s
+>![Alt text](data/lab5/zad1-2/image-10.png)
+>
+>W kazdym z tych trzech zapytań jest wykonywane przesiewanie tabeli (Table Scan), co oznacza, że baza danych musi przeszukać całą tabelę w poszukiwaniu pasujących rekordów.
+>
+>Zapytanie 2 wymaga wykonania dwóch operacji filtrowania (po lastname i firstname), co może wpłynąć na całkowity koszt operacji w porównaniu do zapytań 1 i 3, które wymagają tylko jednej operacji filtrowania.
 
-Pierwsze zapytanie:
-0.002s
-![Alt text](data/image-8.png)
-
-Drugie zapytanie:
-0.001s
-![Alt text](data/image-9.png)
-
-Trzecie zapytanie:
-0.002s
-![Alt text](data/image-10.png)
-
-```
-W kazdym z tych trzech zapytań jest wykonywane przesiewanie tabeli (Table Scan), co oznacza, że baza danych musi przeszukać całą tabelę w poszukiwaniu pasujących rekordów.
-
-Zapytanie 2 wymaga wykonania dwóch operacji filtrowania (po lastname i firstname), co może wpłynąć na całkowity koszt operacji w porównaniu do zapytań 1 i 3, które wymagają tylko jednej operacji filtrowania.
-```
 
 Przygotuj indeks obejmujący te zapytania:
 
@@ -236,26 +235,23 @@ Sprawdź plan zapytania. Co się zmieniło?
 
 ---
 > Wyniki:  
+>
+>Zapytanie pierwsze:
+>0.000s
+>![Alt text](data/lab5/zad1-2/image-11.png)
+>
+>Zapytanie drugie:
+>0.000s
+>![Alt text](data/lab5/zad1-2/image-12.png)
+>
+>Zapytanie trzecie:
+>0.001s
+>![Alt text](data/lab5/zad1-2/image-13.png)
+>
+>W kazdym zapytaniu zamiast pełnego przesiewania tabeli (Table Scan), teraz wykorzystywane jest wyszukiwanie indeksu (Index Seek) na indeksie niemieszanym (NonClustered) person_first_last_name_idx.
+>
+>Dodanie indeksu obejmującego kolumny lastname i firstname pozwoliło każdemu z zapytań skorzystać z wyszukiwania indeksu, co znacząco zmniejszyło koszt operacji i poprawiło wydajność zapytań. 
 
-Zapytanie pierwsze:
-0.000s
-![Alt text](data/image-11.png)
-
-Zapytanie drugie:
-0.000s
-![Alt text](data/image-12.png)
-
-Zapytanie trzecie:
-0.001s
-![Alt text](data/image-13.png)
-
-```
-W kazdym zapytaniu zamiast pełnego przesiewania tabeli (Table Scan), teraz wykorzystywane jest wyszukiwanie indeksu (Index Seek) na indeksie niemieszanym (NonClustered) person_first_last_name_idx.
-
- Dodanie indeksu obejmującego kolumny lastname i firstname pozwoliło każdemu z zapytań skorzystać z wyszukiwania indeksu, co znacząco zmniejszyło koszt operacji i poprawiło wydajność zapytań. 
-
- 
-```
 
 
 Przeprowadź ponownie analizę zapytań tym razem dla parametrów: `FirstName = ‘Angela’` `LastName = ‘Price’`. (Trzy zapytania, różna kombinacja parametrów). 
@@ -265,26 +261,25 @@ Czym różni się ten plan od zapytania o `'Osarumwense Agbonile'` . Dlaczego ta
 
 ---
 > Wyniki: 
-
-![Alt text](image-14.png)
-
-Pierwsze zapytanie:
-
-![Alt text](image-15.png)
-
-Drugie zapytanie:
-![Alt text](data/image-16.png)
-
-Trzecie zapytanie:
-
-![Alt text](data/image-17.png)
-```
-Rózni się tym ze w pierszym i trzecim zapytaniu jest wykorzystywane 'Table Scan' do przeszukiwania tabeli 
-
-Zachowanie indeksów i planów wykonania zależy od konkretnych warunków zapytań i dostępności indeksów. W przypadku zapytań dotyczących 'Angela Price', dostępność indeksów i konkretna kombinacja warunków powoduje, że baza danych może wybrać różne strategie wykonania zapytań.
-
-Jeśli kolejność warunków nie jest optymalna dla dostępnego indeksu, baza danych może zdecydować się na inne strategie wykonania, takie jak pełne przesiewanie tabeli (Table Scan) lub inne operacje filtrowania.
-```
+>
+>![Alt text](data/lab5/zad1-2/image-14.png)
+>
+>Pierwsze zapytanie:
+>
+>![Alt text](data/lab5/zad1-2/image-15.png)
+>
+>Drugie zapytanie:
+>![Alt text](data/lab5/zad1-2/image-16.png)
+>
+>Trzecie zapytanie:
+>
+>![Alt text](data/lab5/zad1-2/image-17.png)
+>
+>Rózni się tym ze w pierszym i trzecim zapytaniu jest wykorzystywane 'Table Scan' do przeszukiwania tabeli 
+>
+>Zachowanie indeksów i planów wykonania zależy od konkretnych warunków zapytań i dostępności indeksów. W przypadku zapytań dotyczących 'Angela Price', dostępność indeksów i konkretna kombinacja warunków powoduje, że baza danych może wybrać różne strategie wykonania zapytań.
+>
+>Jeśli kolejność warunków nie jest optymalna dla dostępnego indeksu, baza danych może zdecydować się na inne strategie wykonania, takie jak pełne przesiewanie tabeli (Table Scan) lub inne operacje filtrowania.
 
 
 # Zadanie 3
@@ -307,30 +302,42 @@ Która część zapytania ma największy koszt?
 
 ---
 > Wyniki: 
-
-```sql
---  ...
-```
+>
+>![Alt text](data/lab5/zad3-5/image.png)
+>![Alt text](data/lab5/zad3-5/image-1.png)
+>
+> Największy koszt ma opracja sortowania (order by) 
 
 Jaki indeks można zastosować aby zoptymalizować koszt zapytania? Przygotuj polecenie tworzące index.
 
 
----
-> Wyniki: 
 
 ```sql
---  ...
+
+CREATE NONCLUSTERED INDEX [_dta_index_purchaseorderdetail_9_933578364__K9D_K5_3_4] ON [dbo].[purchaseorderdetail]
+(
+	[RejectedQty] DESC,
+	[ProductID] ASC
+)
+INCLUDE([DueDate],[OrderQty]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
+
+
 ```
 
  Ponownie wykonaj analizę zapytania:
 
 
 ---
-> Wyniki: 
+> Wyniki:
+>
+>![Alt text](data/lab5/zad3-5/image-2.png)
+>![Alt text](data/lab5/zad3-5/image-3.png)
+>
+>Koszt sortowania (87%) w całości został zamieniony na koszt skanowania indeksu (98%). 
 
-```sql
---  ...
-```
+
+
 
 # Zadanie 4
 
@@ -365,10 +372,15 @@ go
 Czy jest widoczna różnica w zapytaniach? Jeśli tak to jaka? Aby wymusić użycie indeksu użyj `WITH(INDEX(Address_PostalCode_1))` po `FROM`:
 
 > Wyniki: 
-
-```sql
---  ...
-```
+>
+>Z użyciem indeksu nr 1:
+>![Alt text](data/lab5/zad3-5/image-12.png)
+>
+>Z użyciem indeksu nr 2:
+>![Alt text](data/lab5/zad3-5/image-11.png)
+>
+>
+>Koszty i czasy wykonania dla obu indeksów są identyczne.
 
 
 Sprawdź rozmiar Indeksów:
@@ -387,10 +399,11 @@ Który jest większy? Jak można skomentować te dwa podejścia do indeksowania?
 
 
 > Wyniki: 
+>
+>![Alt text](data/lab5/zad3-5/image-10.png)
+>
+>Indeks nr 1 jest  mniejszy od indeksu nr 2. Dzieje się tak dlatego, że indeks nr 2 uwzględnia dodatkową kolumnę `postalcode`. Ponieważ plany wykonania są identyczne, a indeks nr 2 zajmuje więcej pamięci, bardziej optymalne jest zastosowanie indeksu nr 1. 
 
-```sql
---  ...
-```
 
 
 # Zadanie 5 – Indeksy z filtrami
@@ -430,19 +443,17 @@ Przeanalizuj plan dla poniższego zapytania:
 Czy indeks został użyty? Dlaczego?
 
 > Wyniki: 
+>![Alt text](data/lab5/zad3-5/image-13.png)
+>![Alt text](data/lab5/zad3-5/image-14.png)
+>Indeks nie został użyty. Indeks nonclustered może być mniej selektywny niż indeks typu clustered, może on obejmować więcej wierszy w wynikach przeszukiwania. W rezultacie, jeśli warunek zapytania dotyczy w sposób rozłączny składowych indeksu, optymalizator może zdecydować, że pełne przeszukiwanie sterty jest bardziej opłacalne niż korzystanie z indeksu nonclustered.
 
-```sql
---  ...
-```
 
 Spróbuj wymusić indeks. Co się stało, dlaczego takie zachowanie?
 
 > Wyniki: 
-
-```sql
---  ...
-```
-
+>![Alt text](data/lab5/zad3-5/image-15.png)
+>![Alt text](data/lab5/zad3-5/image-16.png)
+>Zgodnie z przewidywaniami, widzoczne jest przeszukiwanie sterty (heap).
 
 ---
 

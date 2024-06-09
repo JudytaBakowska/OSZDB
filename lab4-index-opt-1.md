@@ -15,9 +15,9 @@
 
 
 ---
-
 **Imię i nazwisko:**
 
+Judyta Bąkowska, Karolina Źróbek
 --- 
 
 Celem ćwiczenia jest zapoznanie się z planami wykonania zapytań (execution plans), oraz z budową i możliwością wykorzystaniem indeksów.
@@ -136,10 +136,10 @@ Włącz dwie opcje: **Include Actual Execution Plan** oraz **Include Live Query 
 
 
 
-<!-- ![[data/index1-1.png | 500]] -->
+<!-- ![[data/lab4/index1-1.png | 500]] -->
 
 
-<img src="data/index1-1.png" alt="image" width="500" height="auto">
+<img src="data/lab4/index1-1.png" alt="image" width="500" height="auto">
 
 
 Teraz wykonaj poszczególne zapytania (najlepiej każde analizuj oddzielnie). Co można o nich powiedzieć? Co sprawdzają? Jak można je zoptymalizować?  
@@ -148,9 +148,37 @@ Teraz wykonaj poszczególne zapytania (najlepiej każde analizuj oddzielnie). Co
 ---
 > Wyniki: 
 
-```sql
---  ...
-```
+>**Zapytanie 1:**
+Wybiera wszystkie kolumny z tabeli salesorderheader oraz salesorderdetail, gdzie data zamówienia (orderdate) wynosi '2008-06-01 00:00:00.000'.
+<img src="data/lab4/zad1_zap1.png" alt="image" width="500" height="auto">
+
+
+>**Zapytanie 2:**
+Wybiera datę zamówienia (orderdate), identyfikator produktu (productid), sumę zamówionych ilości (orderqty), sumę rabatu jednostkowego (unitpricediscount) oraz sumę całkowitą linii (linetotal) z tabel salesorderheader i salesorderdetail.
+Wyniki grupowane są według daty zamówienia i identyfikatora produktu.
+Tylko te wyniki, gdzie suma zamówionych ilości jest większa lub równa 100, są uwzględniane.
+<img src="data/lab4/zad1_zap2.png" alt="image" width="500" height="auto">
+
+>**Zapytanie 3:**
+Wybiera numery zamówienia (salesordernumber), numery zamówienia zakupu (purchaseordernumber), datę płatności (duedate) oraz datę wysyłki (shipdate) z tabel salesorderheader i salesorderdetail.
+Wyniki ograniczane są do tych, gdzie data zamówienia jest jedną z dat: '2008-06-01', '2008-06-02', '2008-06-03', '2008-06-04', '2008-06-05'.
+<img src="data/lab4/zad1_zap3.png" alt="image" width="500" height="auto">
+
+>**Zapytanie 4:**
+Wybiera identyfikator zamówienia (salesorderid), numer zamówienia (salesordernumber), numer zamówienia zakupu (purchaseordernumber), datę płatności (duedate) oraz datę wysyłki (shipdate) z tabel salesorderheader i salesorderdetail.
+Wyniki ograniczane są do tych, gdzie numer śledzenia przewoźnika (carriertrackingnumber) jest jednym z podanych: 'ef67-4713-bd', '6c08-4c4c-b8'.
+Wyniki sortowane są według identyfikatora zamówienia (salesorderid) rosnąco.
+<img src="data/lab4/zad1_zap4.png" alt="image" width="500" height="auto">
+
+>**Optymalizacja**
+>
+>Szybkość wykonania mogłaby zostać poprawiona dzięki:
+>- Indeksowaniu kolumn wykorzystywanych w warunkach łączenia JOIN oraz warunkach filtra WHERE, HAVING może poprawić szybkość wykonania.
+>- Unikanie funkcji w warunkach filtra. Mogą one powodować, że baza danych nie korzysta z indeksów. Na przykład, w zapytaniu 3, data zamówienia jest używana w warunku, ale użyto funkcji IN. Lepszym rozwiązaniem byłoby użycie zakresu dat.
+>- Używanie EXISTS zamiast IN. 
+>- Zgrupowane indeksy na kolumnach uzywanych w warunkach filtra. Na przykład `orderdate` i `productid` w zapytaniu 2.
+
+
 
 ---
 
@@ -164,28 +192,49 @@ Teraz wykonaj poszczególne zapytania (najlepiej każde analizuj oddzielnie). Co
 
 Zaznacz wszystkie zapytania, i uruchom je w **Database Engine Tuning Advisor**:
 
-<!-- ![[data/index1-12.png | 500]] -->
+<!-- ![[data/lab4/index1-12.png | 500]] -->
 
-<img src="data/index1-2.png" alt="image" width="500" height="auto">
+<img src="data/lab4/index1-2.png" alt="image" width="500" height="auto">
 
 
 Sprawdź zakładkę **Tuning Options**, co tam można skonfigurować?
 
 ---
 > Wyniki: 
+>
+>*Indexes and Indexed Views*
+>- Clustered Indexes: Opcja ta zaleca stosowanie indeksów klastrów w celu poprawy wydajności zapytań. Indeksy klastrów sortują fizycznie dane w tabeli na podstawie klucza indeksu, co może przyspieszyć wyszukiwanie.
+>- Nonclustered Indexes: Zaleca używanie indeksów nieklastrów do szybkiego wyszukiwania danych na podstawie innych kolumn niż kolumny indeksu.
+>- Filtered Indexes: Pozwala na tworzenie indeksów filtrowanych, które obejmują tylko określone wiersze z tabeli, co może zmniejszyć rozmiar indeksu i przyspieszyć zapytania.
+>
+>*Recommend Columnstore Indexes*
+>
+>Zaleca stosowanie indeksów kolumnowych (columnstore indexes), które są specjalnym rodzajem indeksu zaprojektowanym do szybkiego przetwarzania dużych ilości danych analitycznych.
+>
+>*Evaluate Utilization of Existing PDS Only*
+>Narzędzie DTA będzie oceniać wykorzystanie istniejących struktur fizycznych bazy danych, takich jak indeksy, a nie będzie proponować tworzenia nowych.
+>
+>*Partitioning Strategy to Employ*
+>- No Partitioning: Nie stosuje partycjonowania.
+>- Full Partitioning: Proponuje pełne partycjonowanie, które dzieli dane na logiczne partycje na podstawie określonej kolumny lub wyrażenia.
+>- Aligned Partitioning: Stosuje partycjonowanie zgodne, w którym granice partycji są wyrównane z granicami partycji na dysku, co może przyspieszyć zarządzanie partycjami.
+>
+>*Physical Design Structures (PDS) to Keep in Database*
+>- Do Not Keep Any Existing PDS: Nie zachowuje żadnych istniejących struktur fizycznych.
+>- Keep All Existing PDS: Zachowuje wszystkie istniejące struktury fizyczne, takie jak indeksy i widoki indeksowane.
+>- Keep Clustered Indexes Only: Zachowuje tylko indeksy klastrów.
+Keep Aligned Partitioning: Zachowuje tylko partycjonowanie zgodne.
 
-```sql
---  ...
-```
+
 
 ---
 
 
 Użyj **Start Analysis**:
 
-<!-- ![[data/index1-3.png | 500]] -->
+<!-- ![[data/lab4/index1-3.png | 500]] -->
 
-<img src="data/index1-3.png" alt="image" width="500" height="auto">
+<img src="data/lab4/index1-3.png" alt="image" width="500" height="auto">
 
 
 Zaobserwuj wyniki w **Recommendations**.
@@ -193,9 +242,9 @@ Zaobserwuj wyniki w **Recommendations**.
 Przejdź do zakładki **Reports**. Sprawdź poszczególne raporty. Główną uwagę zwróć na koszty i ich poprawę:
 
 
-<!-- ![[data/index4-1.png | 500]] -->
+<!-- ![[data/lab4/index4-1.png | 500]] -->
 
-<img src="data/index1-4.png" alt="image" width="500" height="auto">
+<img src="data/lab4/index1-4.png" alt="image" width="500" height="auto">
 
 
 Zapisz poszczególne rekomendacje:
@@ -206,9 +255,68 @@ Opisz, dlaczego dane indeksy zostały zaproponowane do zapytań:
 
 ---
 > Wyniki: 
+>
+>Indeks na kolumnie `OrderDate` w tabeli `salesorderheader` powinien przyspieszyć filtrowanie po dacie zamówienia. Indeks na kolumnie `SalesOrderID` w tabeli `salesorderdetail `wspomoże operację łączenia (JOIN).
+>
+>Indeks złożony na kolumnach `OrderDate` i `ProductID` w tabeli `salesorderheader` pozwoli na szybsze grupowanie. Ponownie indeks na kolumnie `SalesOrderID` w tabeli `salesorderdetail` wspomoże łączenie.
+>
+>Indeks na kolumnie `OrderDate` w tabeli `salesorderheader` pozwoli na szybsze filtrowanie po dacie zamówienia. Indeks na kolumnie `SalesOrderID` w tabeli salesorderdetail wspomoże operację łączenia.
+>
+>Indeks na kolumnie `CarrierTrackingNumber` w tabeli `salesorderdetail` przyspieszy filtrowanie po numerze śledzenia przewoźnika. Indeks na kolumnie SalesOrderID w tabeli salesorderheader wspomoże łączenie.
 
 ```sql
---  ...
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderdetail_11_597577167__K1_2_3_4_5_6_7_8_9_10_11] ON [dbo].[salesorderdetail]
+(
+	[SalesOrderID] ASC
+)
+INCLUDE([SalesOrderDetailID],[CarrierTrackingNumber],[OrderQty],[ProductID],[SpecialOfferID],[UnitPrice],[UnitPriceDiscount],[LineTotal],[rowguid],[ModifiedDate]) 
+WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
+
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderdetail_11_597577167__K1_K5_4_8_9] ON [dbo].[salesorderdetail]
+(
+	[SalesOrderID] ASC,
+	[ProductID] ASC
+)
+INCLUDE([OrderQty],[UnitPriceDiscount],[LineTotal]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
+
+SET ANSI_PADDING ON
+go
+
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderdetail_11_597577167__K3_K1] ON [dbo].[salesorderdetail]
+(
+	[CarrierTrackingNumber] ASC,
+	[SalesOrderID] ASC
+)WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
+
+CREATE STATISTICS [_dta_stat_597577167_1_3] ON [dbo].[salesorderdetail]([SalesOrderID], [CarrierTrackingNumber])
+go
+
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderheader_11_581577110__K3_K1_2_4_5_6_7_8_9_10_11_12_13_14_15_16_17_18_19_20_21_22_23_24_25_26] ON [dbo].[salesorderheader]
+(
+	[OrderDate] ASC,
+	[SalesOrderID] ASC
+)
+INCLUDE([RevisionNumber],[DueDate],[ShipDate],[Status],[OnlineOrderFlag],[SalesOrderNumber],[PurchaseOrderNumber],[AccountNumber],[CustomerID],[SalesPersonID],
+	[TerritoryID],[BillToAddressID],[ShipToAddressID],[ShipMethodID],[CreditCardID],[CreditCardApprovalCode],[CurrencyRateID],[SubTotal],[TaxAmt],[Freight],
+	[TotalDue],[Comment],[rowguid],[ModifiedDate]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
+
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderheader_11_581577110__K1_4_5_8_9] ON [dbo].[salesorderheader]
+(
+	[SalesOrderID] ASC
+)
+INCLUDE([DueDate],[ShipDate],[SalesOrderNumber],[PurchaseOrderNumber]) WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
+
+CREATE NONCLUSTERED INDEX [_dta_index_salesorderheader_11_581577110__K1_K3] ON [dbo].[salesorderheader]
+(
+	[SalesOrderID] ASC,
+	[OrderDate] ASC
+)WITH (SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+go
 ```
 
 ---
@@ -217,12 +325,30 @@ Opisz, dlaczego dane indeksy zostały zaproponowane do zapytań:
 Sprawdź jak zmieniły się Execution Plany. Opisz zmiany:
 
 ---
-> Wyniki: 
+> Wyniki:
+>
+>**Zapytanie 1:**
+>
+>Po zastosowaniu indeksu na kolumnie OrderDate w tabeli salesorderheader oraz indeksu na kolumnie SalesOrderID w tabeli salesorderdetail, optymalizator zapytań może wykorzystać te indeksy do szybkiego odnalezienia odpowiednich wierszy. Plan wykonania może więc zawierać operację indeksowego skanu (index scan) lub indeksowego poszukiwania (index seek), co przyspieszy filtrację wyników.
+Zapytanie 2 (grupowanie po dacie zamówienia i identyfikatorze produktu):
+><img src="data/lab4/zad2_zap1_1.png" alt="image" width="500" height="auto">
 
-```sql
---  ...
-```
+>**Zapytanie 2:**
+>
+>Dodanie indeksu złożonego na kolumnach OrderDate i ProductID w tabeli salesorderheader pozwoli na efektywne grupowanie danych. Optymalizator zapytań może wykorzystać ten indeks, co może spowodować zmianę planu wykonania na bardziej wydajny, wykorzystujący indeksowe operacje grupowania (index grouping operations).
+><img src="data/lab4/zad2_zap2.png" alt="image" width="500" height="auto">
 
+>
+>**Zapytanie 3:**
+>
+>Zastosowanie indeksu na kolumnie OrderDate w tabeli salesorderheader pozwoli na szybkie odnalezienie odpowiednich zamówień na podstawie daty zamówienia. Plan wykonania może zawierać indeksowe poszukiwanie (index seek) lub indeksowy skan (index scan), co przyspieszy filtrowanie wyników.
+> <img src="data/lab4/zad2_zap3.png" alt="image" width="500" height="auto">
+
+
+> **Zapytanie 4:**
+>
+>Dodanie indeksu na kolumnie CarrierTrackingNumber w tabeli salesorderdetail umożliwi szybkie odnalezienie odpowiednich zamówień na podstawie numeru śledzenia przewoźnika. Optymalizator zapytań może wykorzystać ten indeks do przyspieszenia operacji filtrowania. Plan wykonania może więc zawierać indeksowe poszukiwanie (index seek) lub indeksowy skan (index scan), zamiast pełnego skanu tabeli, co znacząco poprawi wydajność zapytania.
+><img src="data/lab4/zad2_zap4.png" alt="image" width="500" height="auto">
 ---
 
 
@@ -420,7 +546,7 @@ ALTER INDEX XMLVALUE_Person_Demographics ON Person.Person rebuild;
 ## Dokumentacja
 
 Celem kolejnego zadania jest zapoznanie się z fizyczną budową strony indeksu 
-- [https://www.mssqltips.com/sqlservertip/1578/using-dbcc-page-to-examine-sql-server-table-and-index-data/](https://www.mssqltips.com/sqlservertip/1578/using-dbcc-page-to-examine-sql-server-table-and-index-data/)
+- [https://www.mssqltips.com/sqlservertip/1578/using-dbcc-page-to-examine-sql-server-table-and-index-data/lab4/](https://www.mssqltips.com/sqlservertip/1578/using-dbcc-page-to-examine-sql-server-table-and-index-data/lab4/)
 - [https://www.mssqltips.com/sqlservertip/2082/understanding-and-examining-the-uniquifier-in-sql-server/](https://www.mssqltips.com/sqlservertip/2082/understanding-and-examining-the-uniquifier-in-sql-server/)
 - [http://www.sqlskills.com/blogs/paul/inside-the-storage-engine-using-dbcc-page-and-dbcc-ind-to-find-out-if-page-splits-ever-roll-back/](http://www.sqlskills.com/blogs/paul/inside-the-storage-engine-using-dbcc-page-and-dbcc-ind-to-find-out-if-page-splits-ever-roll-back/)
 

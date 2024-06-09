@@ -16,7 +16,8 @@
 
 ---
 
-**Imię i nazwisko:** Judyta Bąkowska, Karolina Źróbek
+**Imię i nazwisko:**
+Judyta Bąkowska, Karolina Źróbek
 
 --- 
 
@@ -151,11 +152,17 @@ create clustered index order_date2_idx on salesorderheader2(orderdate)
 Wypisz ponownie sto pierwszych zamówień. Co się zmieniło?
 
 ---
-> Wyniki: 
-
-```sql
---  ...
-```
+> Wyniki:
+>
+>Przed stworzeniem indeksu:
+>
+>![Alt text](data/lab6/zad2/image-1.png)
+>
+>Po stworzeniu indeksu:
+>
+>![Alt text](data/lab6/zad2/image-3.png)
+>
+>Czas wykonania zapytania zmniejszył się z ~0.1s do 0.02s. Widoczny jest brak przeprowadzenia operacji sortowania po stworzneiu indeksu. Cały koszt zapytania przypisany jest skanowaniu indeksu, w przeciwieństwie do pierwszej próby, gdzie najbardziej kosztowna była operacja sortowania.
 
 
 Sprawdź zapytanie:
@@ -241,10 +248,16 @@ Sprawdź różnicę pomiędzy przetwarzaniem w zależności od indeksów. Porów
 
 ---
 > Wyniki: 
-
-```sql
---  ...
-```
+>
+>Z indeksem typu clustered:
+>![Alt text](data/lab6/zad3/image.png)
+>![Alt text](data/lab6/zad3/image-2.png)
+>
+>Z indeksem typu nonclustered columnstore:
+>![Alt text](data/lab6/zad3/image-3.png)
+>![Alt text](data/lab6/zad3/image-4.png)
+>
+>Indeks kolumnowy pozwala na błyskawiczne wykonanie zapytania, w przeciwieństwie do indeksu klastrowego, który na wykonanie potrzebuje ok. 13s.
 
 # Zadanie 4 – własne eksperymenty
 
@@ -262,6 +275,7 @@ Do analizy, proszę uwzględnić następujące rodzaje indeksów:
 Proszę przygotować zestaw zapytań do danych, które:
 - wykorzystują poszczególne indeksy
 - które przy wymuszeniu indeksu działają gorzej, niż bez niego (lub pomimo założonego indeksu, tabela jest w pełni skanowana)
+
 Odpowiedź powinna zawierać:
 - Schemat tabeli
 - Opis danych (ich rozmiar, zawartość, statystyki)
@@ -272,9 +286,105 @@ Odpowiedź powinna zawierać:
 - Sprawdzenie, co proponuje Database Engine Tuning Advisor (porównanie czy udało się Państwu znaleźć odpowiednie indeksy do zapytania)
 
 
-> Wyniki: 
-### **ANALIZA 2**
-> Wykorzystanie indeksu klastrowanego, wykorzystującego kilka atrybutów, kolumnowego
+> ### Analiza 1 - wykorzystanie indeksu kolumnowego
+> Eksperyment pozwoli na stwoerdzenie w jakich sytuacjach optymalizator odrzuca wykorzystanie indeksu kolumnowego.
+>
+> Przygotowanie: 
+
+```sql
+--Utworzenie tabeli
+DROP TABLE IF EXISTS SalesExapleTable
+CREATE TABLE SalesExapleTable (
+    SaleID INT PRIMARY KEY CLUSTERED, -- Indeks klastrowany
+    ProductID INT NOT NULL,
+    SaleDate DATE,
+    CustomerID INT,
+    Quantity INT,
+    TotalPrice DECIMAL(10,2),
+    ProductName NVARCHAR(100),
+    CategoryID INT,
+    Discount DECIMAL(5,2),
+    CONSTRAINT FK_ProductID FOREIGN KEY (ProductID) REFERENCES Production.Product(ProductID)
+);
+
+CREATE INDEX IX_SaleDate ON SalesExapleTable(SaleDate); -- Indeks kolumnowy
+CREATE INDEX IX_CustomerID_CategoryID ON SalesExapleTable(CustomerID, CategoryID); -- Indeks nieklastrowany
+
+go
+-- Wstawienie 20 000 rekordów
+
+-- Wygenerowanie przykładowych dat
+WITH Dates AS (
+    SELECT TOP 20000
+        DATEADD(day, -ABS(CHECKSUM(NEWID())) % 365, GETDATE()) AS RandomDate
+    FROM sys.all_columns
+)
+
+INSERT INTO SalesExapleTable (SaleID, ProductID, SaleDate, CustomerID, Quantity, TotalPrice, ProductName, CategoryID, Discount)
+SELECT
+    ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS SaleID,
+    ABS(CHECKSUM(NEWID())) % 1000 + 1 AS ProductID,
+    RandomDate,
+    ABS(CHECKSUM(NEWID())) % 1000 + 1 AS CustomerID,
+    ABS(CHECKSUM(NEWID())) % 10 + 1 AS Quantity,
+    CAST(ABS(CHECKSUM(NEWID())) % 1000 + 1 AS DECIMAL(10,2)) AS TotalPrice,
+    'Product' + CAST(ABS(CHECKSUM(NEWID())) % 1000 + 1 AS NVARCHAR(100)) AS ProductName,
+    ABS(CHECKSUM(NEWID())) % 10 + 1 AS CategoryID,
+    CAST(ABS(CHECKSUM(NEWID())) % 20 AS DECIMAL(5,2)) AS Discount
+FROM Dates;
+```
+
+> Domylsnie optymalizator wybiera wykonanie bez uzycia indeksu kolumnowego dla poniższego zapytania:
+```sql
+SELECT SaleDate,  CategoryID FROM SalesExapleTable
+WHERE SaleDate < '2024-01-22' 
+```
+>![alt text](data/lab6/zad4/image-1.png)
+> 
+> Przy wymuszeniu indeksu otrzymujemy następujące wyniki: 
+```sql
+SELECT SaleDate,  CategoryID FROM SalesExapleTable 
+WITH (INDEX(IX_SaleDate))
+WHERE SaleDate < '2024-01-22'
+```
+>![alt text](data/lab6/zad4/image.png)
+>
+> Porównanie samych czasów wykonania pozwala stwierdzić, że wykorzystanie w tym wypadku indeksu kolumnowego jest wysoko nieoptymalne. Dzieje się tak dlatego, że daty `SalesDates` są z zakresu `2023-04-24 do 2024-04-24`. Wybor wiekszosci dat przez zapytanie powoduje że  korzytanie z indeksu staje się nieoptymalne. Dla poparcia tego stwierdzenia wykonujemy ponizsze zapytanie, zwracające < 50 rekordów:
+ ``` sql
+SELECT SaleDate,  CategoryID FROM SalesExapleTable 
+WHERE SaleDate > '2024-04-22'
+```
+> Zgodnie z przewidywaniami tym razem opłacalne jest wykorzystanie za równo kolumnowego jak i nonclustered:
+> ![alt text](data/lab6/zad4/image-2.png)
+
+> ### Analiza 2 - wykorzystanie indeksu warunkowego
+> Dla tabeli `SalesExampleTable` zakładamy indeks warunkowy na tych samych polach co uprzedmio indeks nieklastrowany:
+```sql 
+CREATE INDEX IX_Filtered ON SalesExapleTable(SaleDate)
+WHERE SaleDate >= '2024-02-01';
+```
+> Tak samo jak w przypadku indeksu kolumnowego optymalizator wybiera indeks jeśli wybieranych rekordów jest stosunkowo niewiele co widać przy porównaniu planów wykonania dwóch poniższych zapytań:
+```sql
+--wiele rekordow - brak uzycia indeksu warunkowego
+SELECT SaleDate,  CategoryID FROM SalesExapleTable 
+WHERE SaleDate > '2023-04-22'
+```
+> ![alt text](data/lab6/zad4/image-3.png)
+
+```sql
+--malo rekordow - uzycie indeksu warunkowego
+SELECT SaleDate,  CategoryID FROM SalesExapleTable 
+WHERE SaleDate > '2024-02-22'
+```
+> ![alt text](data/lab6/zad4/image-4.png)
+
+
+
+
+
+
+ 
+### Analiza 3 - Wykorzystanie indeksu klastrowanego, wykorzystującego kilka atrybutów, kolumnowego
 
 Stworzenie własnych tabel w bazie danych:
 
